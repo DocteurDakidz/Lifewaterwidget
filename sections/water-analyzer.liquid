@@ -1,4 +1,4 @@
-<!-- Analyseur Eau Potable - Version Simplifiée avec Formulaire + Analyse -->
+<!-- Analyseur Eau Potable - Version Corrigée -->
 <div class="water-analyzer" data-section-id="{{ section.id }}" style="
   --primary-color: {{ section.settings.primary_color | default: '#667eea' }};
   --secondary-color: {{ section.settings.secondary_color | default: '#764ba2' }};
@@ -24,65 +24,66 @@
     
     <!-- Formulaire de Contact Initial -->
     <section class="water-analyzer__form-section" data-form-section>
-      {% form 'contact', class: 'water-analyzer__contact-form' %}
-        
-        <div class="water-analyzer__search">
-          <h3 class="water-analyzer__search-title">
-            <span class="water-analyzer__icon">{{ section.settings.search_icon | default: '🏠' }}</span>
-            {{ section.settings.search_title | default: 'Analysez votre eau' }}
-          </h3>
-          <p class="water-analyzer__search-description">
-            {{ section.settings.search_description | default: 'Saisissez votre adresse pour obtenir un rapport de qualité détaillé' }}
-          </p>
+      <div class="water-analyzer__search">
+        <h3 class="water-analyzer__search-title">
+          <span class="water-analyzer__icon">{{ section.settings.search_icon | default: '🏠' }}</span>
+          {{ section.settings.search_title | default: 'Analysez votre eau' }}
+        </h3>
+        <p class="water-analyzer__search-description">
+          {{ section.settings.search_description | default: 'Saisissez votre adresse pour obtenir un rapport de qualité détaillé' }}
+        </p>
 
+        <!-- Formulaire -->
+        <form class="water-analyzer__contact-form" data-contact-form>
+          
           <!-- Champs du formulaire -->
           <div class="water-analyzer__form-fields">
             
             <!-- Adresse (obligatoire) -->
             <div class="water-analyzer__field-group">
-              <label for="contact_address" class="water-analyzer__label">
+              <label for="contact_address_{{ section.id }}" class="water-analyzer__label">
                 🏠 Votre adresse *
               </label>
               <input 
                 type="text" 
-                id="contact_address"
-                name="contact[address]"
+                id="contact_address_{{ section.id }}"
+                name="address"
                 class="water-analyzer__input"
                 placeholder="{{ section.settings.placeholder | default: '01000 Bourg-en-Bresse' }}"
                 required
-                value="{{ form.address }}"
+                data-address-input
               >
             </div>
 
             <!-- Email (obligatoire) -->
             <div class="water-analyzer__field-group">
-              <label for="contact_email" class="water-analyzer__label">
+              <label for="contact_email_{{ section.id }}" class="water-analyzer__label">
                 📧 Votre email *
               </label>
               <input 
                 type="email" 
-                id="contact_email"
-                name="contact[email]"
+                id="contact_email_{{ section.id }}"
+                name="email"
                 class="water-analyzer__input"
                 placeholder="votre@email.com"
                 required
-                value="{{ form.email }}"
+                data-email-input
               >
             </div>
 
             <!-- Nom (optionnel) -->
             {% if section.settings.collect_name %}
             <div class="water-analyzer__field-group">
-              <label for="contact_name" class="water-analyzer__label">
+              <label for="contact_name_{{ section.id }}" class="water-analyzer__label">
                 👤 Votre nom
               </label>
               <input 
                 type="text" 
-                id="contact_name"
-                name="contact[name]"
+                id="contact_name_{{ section.id }}"
+                name="name"
                 class="water-analyzer__input"
                 placeholder="Jean Dupont"
-                value="{{ form.name }}"
+                data-name-input
               >
             </div>
             {% endif %}
@@ -92,9 +93,10 @@
               <label class="water-analyzer__checkbox-label">
                 <input 
                   type="checkbox" 
-                  name="contact[advanced_analysis]"
+                  name="advanced_analysis"
                   value="true"
                   class="water-analyzer__checkbox"
+                  data-advanced-checkbox
                 >
                 <span class="water-analyzer__checkmark"></span>
                 Je souhaite être contacté pour une analyse approfondie de mon eau
@@ -106,10 +108,11 @@
               <label class="water-analyzer__checkbox-label">
                 <input 
                   type="checkbox" 
-                  name="contact[consent]"
+                  name="consent"
                   value="true"
                   required
                   class="water-analyzer__checkbox"
+                  data-consent-checkbox
                 >
                 <span class="water-analyzer__checkmark"></span>
                 J'accepte que mes données soient utilisées pour cette analyse et les recommandations associées *
@@ -123,6 +126,7 @@
             <button 
               type="submit"
               class="water-analyzer__submit-button"
+              data-submit-button
             >
               <span class="water-analyzer__button-icon">{{ section.settings.button_icon | default: '🔍' }}</span>
               <span class="water-analyzer__button-text">{{ section.settings.button_text | default: 'Demander l analyse' }}</span>
@@ -146,13 +150,8 @@
           </div>
           {% endif %}
 
-        </div>
-
-        <!-- Champs cachés -->
-        <input type="hidden" name="contact[tags]" value="water-analysis,{{ section.settings.contact_tags | default: 'lead' }}">
-        <input type="hidden" name="contact[subject]" value="Demande d'analyse eau - {{ section.settings.title }}">
-        
-      {% endform %}
+        </form>
+      </div>
     </section>
 
     <!-- Message de remerciement (caché par défaut) -->
@@ -228,7 +227,7 @@
       <div class="water-analyzer__loading" data-loading style="display: none;">
         <div class="water-analyzer__spinner"></div>
         <h4 class="water-analyzer__loading-title">🔍 Analyse en cours...</h4>
-        <p class="water-analyzer__loading-text" data-loading-text">
+        <p class="water-analyzer__loading-text" data-loading-text>
           Étape 1: Localisation de l'adresse...
         </p>
       </div>
@@ -413,6 +412,11 @@
     box-shadow: 0 10px 30px rgba(238, 85, 82, 0.4);
   }
 
+  .water-analyzer__submit-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
   /* Exemples */
   .water-analyzer__examples {
     display: flex;
@@ -547,6 +551,11 @@
   .water-analyzer__button:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(238, 85, 82, 0.4);
+  }
+
+  .water-analyzer__button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
   }
 
   /* Carte */
@@ -895,12 +904,13 @@
   let marker = null;
   let selectedAddress = null;
   let submittedAddress = null;
+  let isFormSubmitted = false;
   const cache = new Map();
 
   // Sélecteurs DOM
   const selectors = {
     formSection: '[data-form-section]',
-    contactForm: '.water-analyzer__contact-form',
+    contactForm: '[data-contact-form]',
     thankYou: '[data-thank-you]',
     submittedAddress: '[data-submitted-address]',
     continueBtn: '[data-continue-analysis]',
@@ -917,7 +927,13 @@
     mapClose: '[data-map-close]',
     mapInfo: '[data-map-info]',
     mapConfirm: '[data-map-confirm]',
-    selectedAddressSpan: '[data-selected-address]'
+    selectedAddressSpan: '[data-selected-address]',
+    submitButton: '[data-submit-button]',
+    addressInput: '[data-address-input]',
+    emailInput: '[data-email-input]',
+    nameInput: '[data-name-input]',
+    advancedCheckbox: '[data-advanced-checkbox]',
+    consentCheckbox: '[data-consent-checkbox]'
   };
 
   // Utilitaires
@@ -938,6 +954,11 @@
 
     getCacheKey: function(address) {
       return 'water_analysis_' + address.toLowerCase().replace(/\s+/g, '_');
+    },
+
+    validateEmail: function(email) {
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return re.test(email);
     }
   };
 
@@ -1063,8 +1084,8 @@
       if (loading) loading.style.display = 'none';
     },
 
-    toggleButton: function(disabled, text) {
-      const button = document.querySelector(selectors.analysisButton);
+    toggleButton: function(selector, disabled, text) {
+      const button = document.querySelector(selector);
       if (!button) return;
 
       button.disabled = disabled;
@@ -1103,6 +1124,7 @@
       if (submittedAddressEl) submittedAddressEl.textContent = address;
       
       submittedAddress = address;
+      isFormSubmitted = true;
     },
 
     showAnalysisSection: function() {
@@ -1190,6 +1212,8 @@
     if (cache.has(cacheKey)) {
       const cached = cache.get(cacheKey);
       if (Date.now() - cached.timestamp < CONFIG.cacheTimeout) {
+        const html = generateResultsHtml(cached.data.location, cached.data.qualityData);
+        ui.showResults(html);
         return Promise.resolve(cached.data);
       }
     }
@@ -1227,6 +1251,9 @@
           data: result,
           timestamp: Date.now()
         });
+
+        const html = generateResultsHtml(location, qualityData);
+        ui.showResults(html);
 
         return result;
       });
@@ -1341,22 +1368,83 @@
       return;
     }
 
-    ui.toggleButton(true, 'Analyse...');
+    ui.toggleButton(selectors.analysisButton, true, 'Analyse...');
 
-    analyzeWater(address).then(function(result) {
-      const html = generateResultsHtml(result.location, result.qualityData);
-      ui.showResults(html);
-    }).catch(function(error) {
+    analyzeWater(address).catch(function(error) {
       showError(error.message);
     }).finally(function() {
       ui.hideLoading();
-      ui.toggleButton(false, 'Analyser');
+      ui.toggleButton(selectors.analysisButton, false, 'Analyser');
     });
+  }
+
+  // Gestionnaire du formulaire de contact
+  function handleContactForm(e) {
+    e.preventDefault();
+    
+    const addressInput = document.querySelector(selectors.addressInput);
+    const emailInput = document.querySelector(selectors.emailInput);
+    const consentInput = document.querySelector(selectors.consentCheckbox);
+
+    const address = addressInput ? addressInput.value.trim() : '';
+    const email = emailInput ? emailInput.value.trim() : '';
+    const consent = consentInput ? consentInput.checked : false;
+
+    // Validation
+    if (!address) {
+      alert('Veuillez saisir votre adresse');
+      if (addressInput) addressInput.focus();
+      return;
+    }
+
+    if (!email) {
+      alert('Veuillez saisir votre email');
+      if (emailInput) emailInput.focus();
+      return;
+    }
+
+    if (!utils.validateEmail(email)) {
+      alert('Veuillez saisir un email valide');
+      if (emailInput) emailInput.focus();
+      return;
+    }
+
+    if (!consent) {
+      alert('Veuillez accepter l\'utilisation de vos données');
+      if (consentInput) consentInput.focus();
+      return;
+    }
+
+    // Désactiver le bouton pendant la soumission
+    ui.toggleButton(selectors.submitButton, true, 'Envoi...');
+
+    // Simuler l'envoi (en réalité, vous pourriez envoyer à un webhook)
+    setTimeout(function() {
+      // Collecter les données du formulaire
+      const formData = {
+        address: address,
+        email: email,
+        name: document.querySelector(selectors.nameInput)?.value || '',
+        advanced_analysis: document.querySelector(selectors.advancedCheckbox)?.checked || false,
+        timestamp: new Date().toISOString()
+      };
+
+      console.log('Données du formulaire:', formData);
+      
+      // Afficher le message de remerciement
+      ui.showThankYou(address);
+      
+      // Réactiver le bouton (au cas où)
+      ui.toggleButton(selectors.submitButton, false, 'Demander l\'analyse');
+    }, 1000);
   }
 
   // Gestionnaire des exemples
   function setExample(address) {
-    const input = document.querySelector('#contact_address');
+    const input = isFormSubmitted ? 
+      document.querySelector(selectors.analysisInput) : 
+      document.querySelector(selectors.addressInput);
+    
     if (input) {
       input.value = address;
       input.focus();
@@ -1365,33 +1453,12 @@
 
   // Initialisation
   function init() {
-    console.log('🌊 Water Analyzer (Simplified) initialized');
+    console.log('🌊 Water Analyzer (Fixed) initialized');
 
     // Gestionnaire du formulaire de contact
     const contactForm = document.querySelector(selectors.contactForm);
     if (contactForm) {
-      contactForm.addEventListener('submit', function(e) {
-        const addressInput = contactForm.querySelector('[name="contact[address]"]');
-        const emailInput = contactForm.querySelector('[name="contact[email]"]');
-        const consentInput = contactForm.querySelector('[name="contact[consent]"]');
-
-        if (!addressInput?.value || !emailInput?.value) {
-          e.preventDefault();
-          alert('Veuillez remplir tous les champs obligatoires');
-          return;
-        }
-
-        if (consentInput && !consentInput.checked) {
-          e.preventDefault();
-          alert('Veuillez accepter l\'utilisation de vos données');
-          return;
-        }
-
-        // Simuler la soumission réussie (en réalité Shopify gère ça)
-        e.preventDefault();
-        const address = addressInput.value;
-        ui.showThankYou(address);
-      });
+      contactForm.addEventListener('submit', handleContactForm);
     }
 
     // Gestionnaire du bouton "continuer"
@@ -1422,6 +1489,20 @@
         if (e.key === 'Enter') {
           e.preventDefault();
           handleAnalysis();
+        }
+      });
+    }
+
+    // Gestionnaire Enter sur l'input d'adresse du formulaire
+    const addressInput = document.querySelector(selectors.addressInput);
+    if (addressInput) {
+      addressInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const form = document.querySelector(selectors.contactForm);
+          if (form) {
+            form.dispatchEvent(new Event('submit'));
+          }
         }
       });
     }
