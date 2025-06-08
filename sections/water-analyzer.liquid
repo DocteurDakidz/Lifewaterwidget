@@ -1,4 +1,4 @@
-<!-- Analyseur Eau Potable - Version Complète avec Personnalisation -->
+<!-- Analyseur Eau Potable - Version Complète avec Recherche de Proximité -->
 <div class="water-analyzer" data-section-id="{{ section.id }}" style="
   --primary-color: {{ section.settings.primary_color | default: '#667eea' }};
   --secondary-color: {{ section.settings.secondary_color | default: '#764ba2' }};
@@ -440,6 +440,11 @@
     background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
   }
 
+  .water-result--proximity {
+    background: linear-gradient(135deg, #e1f5fe 0%, #b3e5fc 100%);
+    border-left: 4px solid #03a9f4;
+  }
+
   .water-result--warning {
     background: #fff3cd;
     color: #856404;
@@ -468,6 +473,16 @@
 
   .water-result__content p:last-child {
     margin-bottom: 0;
+  }
+
+  .water-result__distance {
+    background: rgba(255, 255, 255, 0.8);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    display: inline-block;
+    margin: 0.5rem 0;
+    font-weight: 600;
+    color: #0277bd;
   }
 
   /* Animations */
@@ -615,7 +630,9 @@
     enableMap: {{ section.settings.enable_map | default: false }},
     maxRetries: 3,
     cacheTimeout: 300000, // 5 minutes
-    dateRangeYears: 2
+    dateRangeYears: 2,
+    proximitySearchRadius: {{ section.settings.proximity_radius | default: 50 }}, // km
+    maxProximityResults: {{ section.settings.max_proximity_results | default: 5 }}
   };
 
   // Variables globales pour la carte
@@ -677,6 +694,26 @@
 
     getCacheKey: function(address) {
       return 'water_analysis_' + address.toLowerCase().replace(/\s+/g, '_');
+    },
+
+    // Calcul de distance entre deux points (formule de Haversine)
+    calculateDistance: function(lat1, lon1, lat2, lon2) {
+      const R = 6371; // Rayon de la Terre en km
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
+    },
+
+    // Formatage de la distance
+    formatDistance: function(distance) {
+      if (distance < 1) {
+        return Math.round(distance * 1000) + ' m';
+      }
+      return distance.toFixed(1) + ' km';
     }
   };
 
@@ -946,6 +983,97 @@
     });
   }
 
+  // Recherche de proximite intelligente
+  const proximitySearch = {
+    // Rechercher les communes voisines
+    findNearbyCommunes: function(targetLat, targetLon) {
+      debug('Recherche de communes voisines...');
+      
+      // URL pour rechercher les communes dans un rayon
+      const url = 'https://geo.api.gouv.fr/communes?lat=' + targetLat + '&lon=' + targetLon + '&distance=' + (CONFIG.proximitySearchRadius * 1000) + '&fields=nom,code,codesPostaux,centre&format=json&geometry=centre';
+      
+      return fetchWithFallback(url).then(function(communes) {
+        if (!communes || !Array.isArray(communes)) {
+          throw new Error('Aucune commune trouvee dans les environs');
+        }
+        
+        // Calculer les distances et trier
+        const communesWithDistance = communes.map(function(commune) {
+          const distance = utils.calculateDistance(
+            targetLat, targetLon,
+            commune.centre.coordinates[1], commune.centre.coordinates[0]
+          );
+          return Object.assign({}, commune, { distance: distance });
+        }).sort(function(a, b) {
+          return a.distance - b.distance;
+        });
+        
+        debug('Trouvees ' + communesWithDistance.length + ' communes dans un rayon de ' + CONFIG.proximitySearchRadius + 'km');
+        return communesWithDistance.slice(0, CONFIG.maxProximityResults);
+      });
+    },
+
+    // Rechercher les donnees de qualite pour les communes proches
+    searchQualityDataForCommunes: function(communes) {
+      debug('Recherche de donnees de qualite pour les communes proches...');
+      
+      const dateLimit = new Date();
+      dateLimit.setFullYear(dateLimit.getFullYear() - CONFIG.dateRangeYears);
+      const dateLimitStr = dateLimit.toISOString().split('T')[0];
+      
+      // Construire la liste des codes communes
+      const communeCodes = communes.map(function(c) { return c.code; }).join(',');
+      
+      const waterUrl = 'https://hubeau.eaufrance.fr/api/v1/qualite_eau_potable/resultats_dis?code_commune=' + communeCodes + '&date_min_prelevement=' + dateLimitStr + '&size=500&format=json&sort=desc';
+      
+      return fetchWithFallback(waterUrl).then(function(qualityData) {
+        if (!qualityData || !qualityData.data || qualityData.data.length === 0) {
+          throw new Error('Aucune donnee de qualite trouvee dans les communes voisines');
+        }
+        
+        // Grouper les donnees par commune
+        const dataByCommune = {};
+        qualityData.data.forEach(function(analysis) {
+          const code = analysis.code_commune;
+          if (!dataByCommune[code]) {
+            dataByCommune[code] = [];
+          }
+          dataByCommune[code].push(analysis);
+        });
+        
+        // Associer avec les informations de communes et distances
+        const results = [];
+        communes.forEach(function(commune) {
+          if (dataByCommune[commune.code]) {
+            results.push({
+              commune: commune,
+              analyses: dataByCommune[commune.code],
+              distance: commune.distance
+            });
+          }
+        });
+        
+        debug('Donnees trouvees pour ' + results.length + ' communes proches');
+        return results;
+      });
+    },
+
+    // Fonction principale de recherche de proximite
+    findNearestWaterData: function(targetLocation) {
+      const coords = targetLocation.geometry.coordinates;
+      const targetLon = coords[0];
+      const targetLat = coords[1];
+      
+      ui.showLoading('Etape 3: Recherche des donnees les plus proches...');
+      
+      return proximitySearch.findNearbyCommunes(targetLat, targetLon)
+        .then(function(communes) {
+          ui.showLoading('Etape 4: Analyse des donnees de proximite...');
+          return proximitySearch.searchQualityDataForCommunes(communes);
+        });
+    }
+  };
+
   // Fonction principale d analyse
   function analyzeWater(address) {
     if (!address || !address.trim()) {
@@ -982,7 +1110,7 @@
       
       debug('Adresse trouvee: ' + cityName + ' (' + cityCode + ')');
 
-      // Etape 2: Recuperation des donnees de qualite
+      // Etape 2: Recuperation des donnees de qualite pour la commune exacte
       ui.showLoading('Etape 2: Recuperation des analyses d eau...');
       
       const dateLimit = new Date();
@@ -993,22 +1121,49 @@
       
       debug('Recuperation des donnees qualite...');
       return fetchWithFallback(waterUrl).then(function(qualityData) {
-        ui.showLoading('Etape 3: Analyse des donnees...');
+        
+        // Si des donnees sont trouvees pour la commune exacte
+        if (qualityData && qualityData.data && qualityData.data.length > 0) {
+          ui.showLoading('Etape 3: Analyse des donnees...');
+          
+          const result = {
+            location: location,
+            qualityData: qualityData,
+            proximityData: null,
+            timestamp: Date.now()
+          };
 
-        const result = {
-          location: location,
-          qualityData: qualityData,
-          timestamp: Date.now()
-        };
+          // Mise en cache
+          cache.set(cacheKey, {
+            data: result,
+            timestamp: Date.now()
+          });
 
-        // Mise en cache
-        cache.set(cacheKey, {
-          data: result,
-          timestamp: Date.now()
-        });
+          debug('Analyse terminee avec succes (donnees directes)');
+          return result;
+        } 
+        // Si aucune donnee pour la commune exacte, rechercher dans les environs
+        else {
+          debug('Aucune donnee pour la commune exacte, recherche de proximite...');
+          
+          return proximitySearch.findNearestWaterData(location).then(function(proximityResults) {
+            const result = {
+              location: location,
+              qualityData: null,
+              proximityData: proximityResults,
+              timestamp: Date.now()
+            };
 
-        debug('Analyse terminee avec succes');
-        return result;
+            // Mise en cache
+            cache.set(cacheKey, {
+              data: result,
+              timestamp: Date.now()
+            });
+
+            debug('Analyse terminee avec succes (donnees de proximite)');
+            return result;
+          });
+        }
       });
     }).catch(function(error) {
       debug('Erreur lors de l analyse: ' + error.message, 'error');
@@ -1016,8 +1171,8 @@
     });
   }
 
-  // Generation du HTML des resultats
-  function generateResultsHtml(location, qualityResponse) {
+  // Generation du HTML des resultats avec donnees de proximite
+  function generateResultsHtml(location, qualityResponse, proximityData) {
     const props = location.properties;
     let html = '';
 
@@ -1033,6 +1188,7 @@
     }
     html += '</div></div>';
 
+    // Si des donnees directes sont disponibles
     if (qualityResponse && qualityResponse.data && qualityResponse.data.length > 0) {
       const analyses = qualityResponse.data;
       const latest = analyses[0];
@@ -1076,26 +1232,90 @@
 
         html += '</div></div>';
       }
+    }
+    // Si seules des donnees de proximite sont disponibles
+    else if (proximityData && proximityData.length > 0) {
+      const nearest = proximityData[0];
+      const analyses = nearest.analyses;
+      const latest = analyses[0];
+      const lastDate = utils.formatDate(latest.date_prelevement);
 
-      // Recommandations
-      html += '<div class="water-result water-result--recommendations">';
-      html += '<h4 class="water-result__title">💡 Recommandations</h4>';
+      // Informations sur la source la plus proche
+      html += '<div class="water-result water-result--proximity">';
+      html += '<h3 class="water-result__title">🎯 Donnees de la source la plus proche</h3>';
       html += '<div class="water-result__content">';
-      html += '<p>• 🔬 Analyses conformes aux normes francaises en vigueur</p>';
-      html += '<p>• 📞 En cas de doute, contactez votre distributeur d eau</p>';
-      html += '<p>• 💧 Consommez 1,5 a 2L d eau par jour selon vos besoins</p>';
-      html += '<p>• 🌡️ Conservez l eau du robinet au frais et consommez-la rapidement</p>';
+      html += '<p><strong>⚠️ Aucune donnee disponible pour ' + utils.sanitizeHtml(props.city) + '</strong></p>';
+      html += '<p>Voici les donnees de la commune la plus proche avec des analyses disponibles :</p>';
+      html += '<div class="water-result__distance">📍 ' + utils.sanitizeHtml(nearest.commune.nom) + ' - ' + utils.formatDistance(nearest.distance) + '</div>';
+      html += '<p><strong>Derniere analyse:</strong> ' + lastDate + '</p>';
+      html += '<p><strong>Total analyses:</strong> ' + analyses.length + ' sur ' + CONFIG.dateRangeYears + ' ans</p>';
+      if (latest.nom_distributeur) {
+        html += '<p><strong>Distributeur:</strong> ' + utils.sanitizeHtml(latest.nom_distributeur) + '</p>';
+      }
       html += '</div></div>';
 
-    } else {
+      // Analyse de conformite pour la source proche
+      const bactConform = analyses.filter(function(d) { return d.conformite_limites_bact_prelevement === 'C'; }).length;
+      const bactTotal = analyses.filter(function(d) { return d.conformite_limites_bact_prelevement; }).length;
+      
+      const physConform = analyses.filter(function(d) { return d.conformite_limites_pc_prelevement === 'C'; }).length;
+      const physTotal = analyses.filter(function(d) { return d.conformite_limites_pc_prelevement; }).length;
+
+      if (bactTotal > 0 || physTotal > 0) {
+        html += '<div class="water-result water-result--conformity">';
+        html += '<h4 class="water-result__title">✅ Conformite Reglementaire (' + utils.sanitizeHtml(nearest.commune.nom) + ')</h4>';
+        html += '<div class="water-result__content">';
+
+        if (bactTotal > 0) {
+          const bactPercent = (bactConform / bactTotal) * 100;
+          html += '<p>🦠 Qualite bacteriologique: <strong>' + bactPercent.toFixed(1) + '%</strong> conforme (' + bactConform + '/' + bactTotal + ' analyses)</p>';
+        }
+
+        if (physTotal > 0) {
+          const physPercent = (physConform / physTotal) * 100;
+          html += '<p>⚗️ Parametres physico-chimiques: <strong>' + physPercent.toFixed(1) + '%</strong> conforme (' + physConform + '/' + physTotal + ' analyses)</p>';
+        }
+
+        html += '</div></div>';
+      }
+
+      // Afficher les autres sources proches si disponibles
+      if (proximityData.length > 1) {
+        html += '<div class="water-result water-result--proximity">';
+        html += '<h4 class="water-result__title">📍 Autres sources analysees dans les environs</h4>';
+        html += '<div class="water-result__content">';
+        
+        for (let i = 1; i < Math.min(proximityData.length, 3); i++) {
+          const source = proximityData[i];
+          html += '<p>• <strong>' + utils.sanitizeHtml(source.commune.nom) + '</strong> - ' + utils.formatDistance(source.distance) + ' (' + source.analyses.length + ' analyses)</p>';
+        }
+        
+        html += '</div></div>';
+      }
+    }
+    // Aucune donnee trouvee
+    else {
       html += '<div class="water-result water-result--warning">';
-      html += '<h4 class="water-result__title">⚠️ Aucune analyse recente disponible</h4>';
+      html += '<h4 class="water-result__title">⚠️ Aucune analyse disponible</h4>';
       html += '<div class="water-result__content">';
-      html += '<p>Aucune donnee d analyse trouvee pour <strong>' + utils.sanitizeHtml(props.city) + '</strong> sur les ' + CONFIG.dateRangeYears + ' dernieres annees.</p>';
-      html += '<p>Cette commune peut etre desservie par un reseau intercommunal ou les donnees peuvent ne pas etre encore disponibles dans la base nationale.</p>';
+      html += '<p>Aucune donnee d analyse trouvee pour <strong>' + utils.sanitizeHtml(props.city) + '</strong> ni dans les communes environnantes (rayon de ' + CONFIG.proximitySearchRadius + 'km).</p>';
+      html += '<p>Cette zone peut etre desservie par un reseau intercommunal eloigne ou les donnees peuvent ne pas etre encore disponibles dans la base nationale.</p>';
       html += '<p>💡 Contactez votre mairie ou votre distributeur d eau pour plus d informations.</p>';
       html += '</div></div>';
     }
+
+    // Recommandations
+    html += '<div class="water-result water-result--recommendations">';
+    html += '<h4 class="water-result__title">💡 Recommandations</h4>';
+    html += '<div class="water-result__content">';
+    html += '<p>• 🔬 Analyses conformes aux normes francaises en vigueur</p>';
+    html += '<p>• 📞 En cas de doute, contactez votre distributeur d eau</p>';
+    html += '<p>• 💧 Consommez 1,5 a 2L d eau par jour selon vos besoins</p>';
+    html += '<p>• 🌡️ Conservez l eau du robinet au frais et consommez-la rapidement</p>';
+    if (proximityData && proximityData.length > 0) {
+      html += '<p>• 🎯 Les donnees affichees proviennent de la source la plus proche, elles peuvent differer de votre reseau local</p>';
+    }
+    html += '</div></div>';
 
     return html;
   }
@@ -1129,7 +1349,7 @@
     ui.toggleButton(true, 'Analyse...');
 
     analyzeWater(address).then(function(result) {
-      const html = generateResultsHtml(result.location, result.qualityData);
+      const html = generateResultsHtml(result.location, result.qualityData, result.proximityData);
       ui.showResults(html);
     }).catch(function(error) {
       showError(error.message);
@@ -1158,7 +1378,7 @@
 
   // Initialisation
   function init() {
-    debug('Initialisation de l analyseur d eau');
+    debug('Initialisation de l analyseur d eau avec recherche de proximite');
 
     // Gestionnaire du formulaire
     const form = document.querySelector(selectors.form);
@@ -1207,7 +1427,7 @@
       }
     }
 
-    debug('Analyseur initialise et pret');
+    debug('Analyseur initialise et pret avec recherche de proximite');
   }
 
   // Demarrage quand le DOM est pret
@@ -1387,6 +1607,31 @@
       "label": "Activer la carte interactive",
       "default": false,
       "info": "Permet de selectionner une adresse sur une carte"
+    },
+    {
+      "type": "header",
+      "content": "Recherche de proximite"
+    },
+    {
+      "type": "range",
+      "id": "proximity_radius",
+      "label": "Rayon de recherche",
+      "min": 10,
+      "max": 100,
+      "step": 10,
+      "default": 50,
+      "unit": "km",
+      "info": "Distance maximale pour chercher des donnees dans les communes voisines"
+    },
+    {
+      "type": "range",
+      "id": "max_proximity_results",
+      "label": "Nombre max de communes",
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "default": 5,
+      "info": "Nombre maximum de communes voisines a analyser"
     },
     {
       "type": "header",
