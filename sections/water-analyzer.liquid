@@ -1,4 +1,4 @@
-<!-- Analyseur Eau Potable - Version Sécurisée -->
+<!-- Analyseur Eau Potable - Version Audit Sécurisée -->
 <div class="water-analyzer" data-section-id="{{ section.id }}" style="
   --primary-color: {{ section.settings.primary_color | default: '#667eea' }};
   --secondary-color: {{ section.settings.secondary_color | default: '#764ba2' }};
@@ -99,6 +99,35 @@
       </form>
     </section>
 
+    <!-- Audit Section (visible en mode debug) -->
+    {% if section.settings.debug_mode %}
+    <div class="water-analyzer__audit" data-audit-info style="display: none;">
+      <h4>🔍 Audit de Sauvegarde</h4>
+      <div class="water-analyzer__audit-content">
+        <div class="audit-item">
+          <span class="audit-label">📊 Google Sheets:</span>
+          <span class="audit-status" data-sheets-status>En attente...</span>
+        </div>
+        <div class="audit-item">
+          <span class="audit-label">🔗 URL API:</span>
+          <span class="audit-value" data-api-url>Non configuré</span>
+        </div>
+        <div class="audit-item">
+          <span class="audit-label">📝 Dernière ligne:</span>
+          <span class="audit-value" data-last-row>Aucune</span>
+        </div>
+        <div class="audit-item">
+          <span class="audit-label">⏱️ Temps réponse:</span>
+          <span class="audit-value" data-response-time>-</span>
+        </div>
+        <div class="audit-item">
+          <span class="audit-label">✅ Vérification:</span>
+          <button class="audit-verify-btn" data-verify-btn>Vérifier maintenant</button>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
     <!-- Debug Info (hidden by default) -->
     {% if section.settings.debug_mode %}
     <div class="water-analyzer__debug" data-debug-info style="display: none;">
@@ -129,6 +158,12 @@
         <h3>✅ Analyse terminee avec succes !</h3>
         <p>📧 Un rapport detaille a ete envoye a votre adresse email.</p>
         <p>💾 Vos donnees ont ete sauvegardees de maniere securisee.</p>
+        <div class="water-analyzer__save-status" data-save-status>
+          <p class="save-status-item">
+            <span class="save-icon" data-save-icon">⏳</span>
+            <span data-save-text">Sauvegarde en cours...</span>
+          </p>
+        </div>
       </div>
     </div>
   </div>
@@ -294,6 +329,79 @@
     margin: 0;
   }
 
+  /* Audit Styles */
+  .water-analyzer__audit {
+    background: #e8f4fd;
+    border: 2px solid #2196f3;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    font-family: 'Courier New', monospace;
+  }
+
+  .water-analyzer__audit h4 {
+    margin: 0 0 1rem 0;
+    color: #1976d2;
+    font-size: 1.1rem;
+  }
+
+  .water-analyzer__audit-content {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .audit-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    background: white;
+    border-radius: 6px;
+    border-left: 4px solid #2196f3;
+  }
+
+  .audit-label {
+    font-weight: 600;
+    color: #333;
+  }
+
+  .audit-status, .audit-value {
+    font-weight: 500;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+  }
+
+  .audit-status.success {
+    background: #c8e6c9;
+    color: #2e7d32;
+  }
+
+  .audit-status.error {
+    background: #ffcdd2;
+    color: #c62828;
+  }
+
+  .audit-status.pending {
+    background: #fff3e0;
+    color: #ef6c00;
+  }
+
+  .audit-verify-btn {
+    background: #2196f3;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background 0.2s ease;
+  }
+
+  .audit-verify-btn:hover {
+    background: #1976d2;
+  }
+
   .water-analyzer__debug {
     background: #e3f2fd;
     padding: 1rem;
@@ -360,6 +468,34 @@
   .water-analyzer__success-content p {
     margin: 0.5rem 0;
     color: #2d5a27;
+  }
+
+  .water-analyzer__save-status {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+  }
+
+  .save-status-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .save-icon {
+    font-size: 1.2rem;
+  }
+
+  .save-icon.success {
+    color: #2e7d32;
+  }
+
+  .save-icon.error {
+    color: #c62828;
   }
 
   /* Result Styles */
@@ -445,6 +581,12 @@
     .water-analyzer__examples {
       justify-content: center;
     }
+
+    .audit-item {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
   }
 
   @media (max-width: 480px) {
@@ -493,7 +635,7 @@
 (function() {
   'use strict';
   
-  // Configuration sécurisée Google Sheets
+  // Configuration sécurisée Google Sheets avec audit
   const GOOGLE_SHEETS_CONFIG = {
     // Clé API obfusquée et reconstituée dynamiquement
     getApiKey: function() {
@@ -507,7 +649,7 @@
     // ID du spreadsheet obfusqué
     getSpreadsheetId: function() {
       const encoded = '1AwAkdThJ40WDVWdg5vaLPVlYW-J-MqoS_2lQkxvEiB0';
-      return encoded; // Vous pouvez ajouter plus d'obfuscation ici si nécessaire
+      return encoded;
     },
     
     range: 'A:G',
@@ -521,6 +663,15 @@
       
       return baseUrl + spreadsheetId + '/values/' + this.range + 
              ':append?valueInputOption=RAW&key=' + apiKey;
+    },
+
+    // URL pour lire les données (audit)
+    buildReadUrl: function() {
+      const baseUrl = 'https://sheets.googleapis.com/v4/spreadsheets/';
+      const apiKey = this.getApiKey();
+      const spreadsheetId = this.getSpreadsheetId();
+      
+      return baseUrl + spreadsheetId + '/values/' + this.range + '?key=' + apiKey;
     }
   };
 
@@ -561,9 +712,18 @@
     dateRangeYears: 2
   };
 
+  // Variables globales pour l'audit
+  let auditData = {
+    lastSaveAttempt: null,
+    lastSaveSuccess: null,
+    lastError: null,
+    responseTime: null,
+    totalRows: 0
+  };
+
   // Variables globales
   let currentStep = 0;
-  const totalSteps = 5;
+  const totalSteps = 6; // Ajout d'une étape pour la vérification
 
   // Cache simple
   const cache = new Map();
@@ -579,9 +739,18 @@
     progressBar: '[data-progress-bar]',
     results: '[data-results]',
     success: '[data-success]',
+    saveStatus: '[data-save-status]',
+    saveIcon: '[data-save-icon]',
+    saveText: '[data-save-text]',
     debugInfo: '[data-debug-info]',
     debugText: '[data-debug-text]',
-    examples: '[data-example]'
+    examples: '[data-example]',
+    auditInfo: '[data-audit-info]',
+    sheetsStatus: '[data-sheets-status]',
+    apiUrl: '[data-api-url]',
+    lastRow: '[data-last-row]',
+    responseTime: '[data-response-time]',
+    verifyBtn: '[data-verify-btn]'
   };
 
   // Utilitaires
@@ -609,17 +778,13 @@
       return 'water_analysis_' + address.toLowerCase().replace(/\s+/g, '_');
     },
 
-    // Fonction pour encoder/décoder des données sensibles
-    obfuscate: function(str) {
-      return btoa(str).split('').reverse().join('');
-    },
-
-    deobfuscate: function(str) {
-      return atob(str.split('').reverse().join(''));
+    formatResponseTime: function(ms) {
+      if (ms < 1000) return ms + 'ms';
+      return (ms / 1000).toFixed(1) + 's';
     }
   };
 
-  // Fonction de debug sécurisée
+  // Fonction de debug sécurisée avec audit
   function debug(message, type) {
     type = type || 'info';
     const timestamp = new Date().toLocaleTimeString('fr-FR');
@@ -641,6 +806,98 @@
     }
   }
 
+  // Mise à jour de l'interface d'audit
+  function updateAuditUI() {
+    if (!CONFIG.debugMode) return;
+
+    const auditInfo = document.querySelector(selectors.auditInfo);
+    if (auditInfo) {
+      auditInfo.style.display = 'block';
+    }
+
+    // Status Google Sheets
+    const sheetsStatus = document.querySelector(selectors.sheetsStatus);
+    if (sheetsStatus) {
+      if (auditData.lastSaveSuccess) {
+        sheetsStatus.textContent = '✅ Connecté et fonctionnel';
+        sheetsStatus.className = 'audit-status success';
+      } else if (auditData.lastError) {
+        sheetsStatus.textContent = '❌ Erreur: ' + auditData.lastError;
+        sheetsStatus.className = 'audit-status error';
+      } else {
+        sheetsStatus.textContent = '⏳ Non testé';
+        sheetsStatus.className = 'audit-status pending';
+      }
+    }
+
+    // URL API (masquée)
+    const apiUrl = document.querySelector(selectors.apiUrl);
+    if (apiUrl) {
+      try {
+        const url = GOOGLE_SHEETS_CONFIG.buildUrl();
+        const maskedUrl = url.replace(/key=[^&]+/, 'key=***HIDDEN***');
+        apiUrl.textContent = maskedUrl.substring(0, 60) + '...';
+      } catch (error) {
+        apiUrl.textContent = 'Erreur de configuration';
+      }
+    }
+
+    // Dernière ligne
+    const lastRow = document.querySelector(selectors.lastRow);
+    if (lastRow) {
+      lastRow.textContent = auditData.totalRows > 0 ? 
+        'Ligne ' + auditData.totalRows : 'Aucune donnée';
+    }
+
+    // Temps de réponse
+    const responseTime = document.querySelector(selectors.responseTime);
+    if (responseTime) {
+      responseTime.textContent = auditData.responseTime ? 
+        utils.formatResponseTime(auditData.responseTime) : '-';
+    }
+  }
+
+  // Vérification de la connectivité Google Sheets
+  async function verifyGoogleSheetsConnection() {
+    debug('🔍 Vérification de la connexion Google Sheets...');
+    
+    const startTime = Date.now();
+    
+    try {
+      const readUrl = GOOGLE_SHEETS_CONFIG.buildReadUrl();
+      
+      const response = await fetch(readUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+
+      auditData.responseTime = Date.now() - startTime;
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error('HTTP ' + response.status + ': ' + (errorData.error?.message || 'Erreur inconnue'));
+      }
+
+      const data = await response.json();
+      auditData.totalRows = data.values ? data.values.length : 0;
+      auditData.lastSaveSuccess = new Date();
+      auditData.lastError = null;
+
+      debug('✅ Connexion Google Sheets vérifiée - ' + auditData.totalRows + ' lignes trouvées');
+      return true;
+
+    } catch (error) {
+      auditData.lastError = error.message;
+      auditData.lastSaveSuccess = null;
+      debug('❌ Erreur de connexion Google Sheets: ' + error.message, 'error');
+      return false;
+    } finally {
+      updateAuditUI();
+    }
+  }
+
   // Gestion de la barre de progression
   function updateProgress(step, message) {
     currentStep = step;
@@ -658,6 +915,33 @@
     }
     
     debug('Progression: ' + percentage + '% - ' + message);
+  }
+
+  // Mise à jour du statut de sauvegarde
+  function updateSaveStatus(status, message) {
+    const saveIcon = document.querySelector(selectors.saveIcon);
+    const saveText = document.querySelector(selectors.saveText);
+    
+    if (saveIcon && saveText) {
+      switch (status) {
+        case 'success':
+          saveIcon.textContent = '✅';
+          saveIcon.className = 'save-icon success';
+          saveText.textContent = message || 'Données sauvegardées avec succès';
+          break;
+        case 'error':
+          saveIcon.textContent = '❌';
+          saveIcon.className = 'save-icon error';
+          saveText.textContent = message || 'Erreur lors de la sauvegarde';
+          break;
+        case 'pending':
+        default:
+          saveIcon.textContent = '⏳';
+          saveIcon.className = 'save-icon';
+          saveText.textContent = message || 'Sauvegarde en cours...';
+          break;
+      }
+    }
   }
 
   // Gestion des etats de l interface
@@ -723,6 +1007,8 @@
       if (results) results.style.display = 'none';
       if (success) {
         success.style.display = 'block';
+        updateSaveStatus('pending', 'Vérification de la sauvegarde...');
+        
         setTimeout(function() {
           success.scrollIntoView({ 
             behavior: 'smooth', 
@@ -799,14 +1085,19 @@
     });
   }
 
-  // Sauvegarde sécurisée dans Google Sheets
+  // Sauvegarde sécurisée dans Google Sheets avec audit complet
   async function saveToGoogleSheets(email, address, analysisData) {
     if (!GOOGLE_SHEETS_CONFIG.enabled) {
       debug('Google Sheets non configure, saut de la sauvegarde');
-      return;
+      updateSaveStatus('error', 'Google Sheets non configuré');
+      return false;
     }
 
-    updateProgress(4, 'Sauvegarde securisee des donnees...');
+    updateProgress(5, 'Sauvegarde securisee des donnees...');
+    updateSaveStatus('pending', 'Sauvegarde en cours...');
+
+    const startTime = Date.now();
+    auditData.lastSaveAttempt = new Date();
 
     try {
       const location = analysisData.location;
@@ -850,6 +1141,8 @@
       // Construction sécurisée de l'URL
       const url = GOOGLE_SHEETS_CONFIG.buildUrl();
 
+      debug('📤 Envoi des données vers Google Sheets...');
+
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -858,20 +1151,43 @@
         body: JSON.stringify(requestBody)
       });
 
+      auditData.responseTime = Date.now() - startTime;
+
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error('Erreur sauvegarde: ' + response.status);
+        const errorMessage = errorData.error?.message || 'Erreur HTTP ' + response.status;
+        throw new Error(errorMessage);
       }
 
-      debug('Donnees sauvegardees avec succes (email anonymise)');
+      const responseData = await response.json();
+      
+      // Mise à jour des données d'audit
+      auditData.lastSaveSuccess = new Date();
+      auditData.lastError = null;
+      auditData.totalRows = responseData.updates?.updatedRows || auditData.totalRows + 1;
+
+      debug('✅ Données sauvegardées avec succès dans Google Sheets');
+      debug('📊 Ligne ajoutée: ' + JSON.stringify(rowData));
+      
+      updateSaveStatus('success', 'Données sauvegardées avec succès');
+      updateAuditUI();
+      
+      return true;
       
     } catch (error) {
-      debug('Erreur lors de la sauvegarde: ' + error.message, 'error');
-      // Ne pas faire echouer l'analyse pour une erreur de sauvegarde
+      auditData.responseTime = Date.now() - startTime;
+      auditData.lastError = error.message;
+      auditData.lastSaveSuccess = null;
+      
+      debug('❌ Erreur lors de la sauvegarde Google Sheets: ' + error.message, 'error');
+      updateSaveStatus('error', 'Erreur: ' + error.message);
+      updateAuditUI();
+      
+      return false;
     }
   }
 
-  // Fonction principale d analyse
+  // Fonction principale d analyse avec audit
   async function analyzeWater(email, address) {
     if (!email || !utils.validateEmail(email)) {
       throw new Error('Veuillez saisir une adresse email valide');
@@ -881,7 +1197,7 @@
       throw new Error('Veuillez saisir une adresse valide');
     }
 
-    debug('Demarrage de l analyse securisee');
+    debug('🚀 Demarrage de l analyse securisee avec audit');
 
     // Etape 1: Validation email
     updateProgress(1, 'Verification de l email...');
@@ -901,7 +1217,7 @@
     const cityCode = location.properties.citycode;
     const cityName = location.properties.city;
     
-    debug('Adresse trouvee: ' + cityName + ' (' + cityCode + ')');
+    debug('📍 Adresse trouvee: ' + cityName + ' (' + cityCode + ')');
 
     // Etape 3: Recuperation des donnees de qualite
     updateProgress(3, 'Recuperation des analyses d eau...');
@@ -920,14 +1236,23 @@
       timestamp: Date.now()
     };
 
-    // Etape 4: Sauvegarde sécurisée
-    await saveToGoogleSheets(email, address, analysisData);
+    // Etape 4: Analyse des donnees
+    updateProgress(4, 'Analyse des donnees de qualite...');
+    await new Promise(resolve => setTimeout(resolve, 300));
 
-    // Etape 5: Finalisation
-    updateProgress(5, 'Finalisation du rapport...');
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // Etape 5: Sauvegarde sécurisée avec audit
+    const saveSuccess = await saveToGoogleSheets(email, address, analysisData);
 
-    debug('Analyse terminee avec succes');
+    // Etape 6: Vérification finale
+    updateProgress(6, 'Verification finale...');
+    if (saveSuccess) {
+      // Vérifier que les données ont bien été sauvegardées
+      setTimeout(async function() {
+        await verifyGoogleSheetsConnection();
+      }, 1000);
+    }
+
+    debug('🎉 Analyse terminee avec succes (sauvegarde: ' + (saveSuccess ? 'OK' : 'ERREUR') + ')');
     return analysisData;
   }
 
@@ -1034,6 +1359,7 @@
       
     }).catch(function(error) {
       showError(error.message);
+      updateSaveStatus('error', 'Analyse échouée');
     }).finally(function() {
       ui.hideLoading();
       ui.toggleButton(false, '{{ section.settings.button_text | default: "Analyser" }}');
@@ -1051,22 +1377,37 @@
     }
   }
 
-  // Initialisation sécurisée
-  function init() {
-    debug('Initialisation de l analyseur d eau securise');
+  // Gestionnaire de vérification manuelle
+  function handleVerifyClick() {
+    debug('🔍 Vérification manuelle demandée');
+    verifyGoogleSheetsConnection();
+  }
 
-    // Vérification de la configuration
+  // Initialisation sécurisée avec audit
+  function init() {
+    debug('🚀 Initialisation de l analyseur d eau securise avec audit');
+
+    // Vérification initiale de la configuration
     try {
       const testKey = GOOGLE_SHEETS_CONFIG.getApiKey();
       const testId = GOOGLE_SHEETS_CONFIG.getSpreadsheetId();
       
       if (testKey && testId) {
-        debug('Configuration Google Sheets validee');
+        debug('✅ Configuration Google Sheets validee');
+        
+        // Test de connectivité initial
+        if (CONFIG.debugMode) {
+          setTimeout(function() {
+            verifyGoogleSheetsConnection();
+          }, 1000);
+        }
       } else {
-        debug('Configuration Google Sheets manquante', 'warn');
+        debug('❌ Configuration Google Sheets manquante', 'error');
+        auditData.lastError = 'Configuration manquante';
       }
     } catch (error) {
-      debug('Erreur de configuration: ' + error.message, 'error');
+      debug('❌ Erreur de configuration: ' + error.message, 'error');
+      auditData.lastError = 'Erreur de configuration: ' + error.message;
     }
 
     // Gestionnaire du formulaire
@@ -1081,7 +1422,16 @@
       examples[i].addEventListener('click', handleExampleClick);
     }
 
-    debug('Analyseur initialise et pret (mode securise)');
+    // Gestionnaire de vérification manuelle
+    const verifyBtn = document.querySelector(selectors.verifyBtn);
+    if (verifyBtn) {
+      verifyBtn.addEventListener('click', handleVerifyClick);
+    }
+
+    // Mise à jour initiale de l'interface d'audit
+    updateAuditUI();
+
+    debug('✅ Analyseur initialise et pret (mode securise avec audit)');
   }
 
   // Nettoyage des variables sensibles en mémoire
@@ -1094,6 +1444,9 @@
       GOOGLE_SHEETS_CONFIG.getApiKey = null;
       GOOGLE_SHEETS_CONFIG.getSpreadsheetId = null;
     }
+    
+    // Log final d'audit
+    debug('🧹 Nettoyage des données sensibles effectué');
   });
 
   // Demarrage
@@ -1307,8 +1660,9 @@
     {
       "type": "checkbox",
       "id": "debug_mode",
-      "label": "Mode debug",
-      "default": false
+      "label": "Mode debug et audit",
+      "default": false,
+      "info": "Active l'interface d'audit pour verifier la sauvegarde Google Sheets"
     }
   ],
   "presets": [
