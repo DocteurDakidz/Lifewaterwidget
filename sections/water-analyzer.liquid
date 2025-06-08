@@ -488,12 +488,12 @@
 (function() {
   'use strict';
   
-  // Configuration Google Sheets
+  // Configuration Google Sheets avec vos vraies donnees
   const GOOGLE_SHEETS_CONFIG = {
-    apiKey: '{{ section.settings.google_api_key }}',
-    spreadsheetId: '{{ section.settings.google_sheet_id }}',
+    apiKey: 'AIzaSyDdORyaPwp2a-6SIOaeI6IdvAdOqPpkOSE',
+    spreadsheetId: '1AwAkdThJ40WDVWdg5vaLPVlYW-J-MqoS_2lQkxvEiB0',
     range: 'A:G', // Colonnes A à G
-    enabled: {{ section.settings.enable_google_sheets | default: false }}
+    enabled: true // Activé par défaut avec vos données
   };
 
   // Configuration avec systeme de fallback CORS
@@ -818,7 +818,8 @@
       });
 
       if (!response.ok) {
-        throw new Error('Erreur Google Sheets: ' + response.status);
+        const errorData = await response.json();
+        throw new Error('Erreur Google Sheets: ' + response.status + ' - ' + (errorData.error?.message || 'Erreur inconnue'));
       }
 
       debug('Donnees sauvegardees dans Google Sheets avec succes');
@@ -1012,6 +1013,7 @@
   // Initialisation
   function init() {
     debug('Initialisation de l analyseur d eau avec Google Sheets');
+    debug('Google Sheets ID: ' + GOOGLE_SHEETS_CONFIG.spreadsheetId);
 
     // Gestionnaire du formulaire
     const form = document.querySelector(selectors.form);
@@ -1217,29 +1219,6 @@
       "label": "Exemples d adresses",
       "default": "01000,Gex,Bourg-en-Bresse",
       "info": "Separes par des virgules"
-    },
-    {
-      "type": "header",
-      "content": "Google Sheets Integration"
-    },
-    {
-      "type": "checkbox",
-      "id": "enable_google_sheets",
-      "label": "Activer Google Sheets",
-      "default": false,
-      "info": "Sauvegarde automatique dans Google Sheets"
-    },
-    {
-      "type": "text",
-      "id": "google_api_key",
-      "label": "Cle API Google",
-      "info": "Votre cle API Google Sheets"
-    },
-    {
-      "type": "text",
-      "id": "google_sheet_id",
-      "label": "ID Google Sheet",
-      "info": "L'ID de votre Google Sheet (dans l'URL)"
     },
     {
       "type": "header",
