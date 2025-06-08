@@ -1,9 +1,17 @@
-<!-- Analyseur Eau Potable - Version Améliorée -->
-<div class="water-analyzer" data-section-id="{{ section.id }}">
+<!-- Analyseur Eau Potable - Version Complète avec Personnalisation -->
+<div class="water-analyzer" data-section-id="{{ section.id }}" style="
+  --primary-color: {{ section.settings.primary_color | default: '#667eea' }};
+  --secondary-color: {{ section.settings.secondary_color | default: '#764ba2' }};
+  --accent-color: {{ section.settings.accent_color | default: '#f093fb' }};
+  --button-color: {{ section.settings.button_color | default: '#ff6b6b' }};
+  --text-color: {{ section.settings.text_color | default: '#333333' }};
+  --border-radius: {{ section.settings.border_radius | default: 20 }}px;
+  --section-padding: {{ section.settings.section_padding | default: 2 }}rem;
+">
   <!-- Header -->
   <header class="water-analyzer__header">
     <h2 class="water-analyzer__title">
-      <span class="water-analyzer__icon">🌊</span>
+      <span class="water-analyzer__icon">{{ section.settings.header_icon | default: '🌊' }}</span>
       {{ section.settings.title | default: 'Analyseur Qualite Eau Potable' }}
     </h2>
     <p class="water-analyzer__subtitle">
@@ -17,12 +25,39 @@
     <!-- Search Section -->
     <section class="water-analyzer__search">
       <h3 class="water-analyzer__search-title">
-        <span class="water-analyzer__icon">🏠</span>
-        Analysez votre eau
+        <span class="water-analyzer__icon">{{ section.settings.search_icon | default: '🏠' }}</span>
+        {{ section.settings.search_title | default: 'Analysez votre eau' }}
       </h3>
       <p class="water-analyzer__search-description">
-        Saisissez votre adresse pour obtenir un rapport de qualite detaille
+        {{ section.settings.search_description | default: 'Saisissez votre adresse pour obtenir un rapport de qualite detaille' }}
       </p>
+      
+      <!-- Map Toggle -->
+      {% if section.settings.enable_map %}
+      <div class="water-analyzer__map-toggle">
+        <button type="button" class="water-analyzer__map-btn" data-map-toggle>
+          <span class="water-analyzer__map-icon">🗺️</span>
+          <span class="water-analyzer__map-text">Utiliser la carte</span>
+        </button>
+      </div>
+      {% endif %}
+
+      <!-- Interactive Map -->
+      {% if section.settings.enable_map %}
+      <div class="water-analyzer__map-container" data-map-container style="display: none;">
+        <div class="water-analyzer__map-header">
+          <h4>🗺️ Cliquez sur la carte pour selectionner votre adresse</h4>
+          <button type="button" class="water-analyzer__map-close" data-map-close>✕</button>
+        </div>
+        <div id="water-map-{{ section.id }}" class="water-analyzer__map" data-map></div>
+        <div class="water-analyzer__map-info" data-map-info style="display: none;">
+          <p><strong>Adresse selectionnee:</strong> <span data-selected-address></span></p>
+          <button type="button" class="water-analyzer__map-confirm" data-map-confirm>
+            Analyser cette adresse
+          </button>
+        </div>
+      </div>
+      {% endif %}
       
       <form class="water-analyzer__form" data-water-form>
         <div class="water-analyzer__input-group">
@@ -41,12 +76,13 @@
             data-water-button
             aria-label="Lancer l analyse"
           >
-            <span class="water-analyzer__button-icon">🔍</span>
-            <span class="water-analyzer__button-text">Analyser</span>
+            <span class="water-analyzer__button-icon">{{ section.settings.button_icon | default: '🔍' }}</span>
+            <span class="water-analyzer__button-text">{{ section.settings.button_text | default: 'Analyser' }}</span>
           </button>
         </div>
 
         <!-- Examples -->
+        {% if section.settings.show_examples %}
         <div class="water-analyzer__examples">
           <span class="water-analyzer__examples-label">💡 Exemples :</span>
           {% assign examples = section.settings.examples | default: '01000,Gex,Bourg-en-Bresse' | split: ',' %}
@@ -60,6 +96,7 @@
             </button>
           {% endfor %}
         </div>
+        {% endif %}
       </form>
     </section>
 
@@ -74,7 +111,7 @@
     <!-- Loading State -->
     <div class="water-analyzer__loading" data-loading style="display: none;">
       <div class="water-analyzer__spinner" aria-hidden="true"></div>
-      <h4 class="water-analyzer__loading-title">🔍 Analyse en cours...</h4>
+      <h4 class="water-analyzer__loading-title">{{ section.settings.loading_icon | default: '🔍' }} Analyse en cours...</h4>
       <p class="water-analyzer__loading-text" data-loading-text>
         Etape 1: Localisation de l adresse...
       </p>
@@ -90,19 +127,20 @@
 <style>
   .water-analyzer {
     font-family: var(--font-body-family, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif);
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 20px;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    border-radius: var(--border-radius);
     overflow: hidden;
     box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
-    margin: 2rem 0;
-    color: #333;
+    margin: var(--section-padding) 0;
+    color: var(--text-color);
     max-width: 100%;
+    position: relative;
   }
 
   .water-analyzer__header {
     background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
     color: white;
-    padding: 2rem 1.5rem;
+    padding: var(--section-padding) calc(var(--section-padding) * 0.75);
     text-align: center;
   }
 
@@ -126,14 +164,14 @@
 
   .water-analyzer__content {
     background: white;
-    padding: 2rem 1.5rem;
+    padding: var(--section-padding) calc(var(--section-padding) * 0.75);
   }
 
   .water-analyzer__search {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    padding: 2rem;
-    border-radius: 15px;
-    margin-bottom: 2rem;
+    background: linear-gradient(135deg, var(--accent-color) 0%, #f5576c 100%);
+    padding: var(--section-padding);
+    border-radius: calc(var(--border-radius) * 0.75);
+    margin-bottom: var(--section-padding);
     color: white;
   }
 
@@ -146,6 +184,109 @@
   .water-analyzer__search-description {
     margin: 0 0 1.5rem 0;
     opacity: 0.95;
+  }
+
+  /* Map Toggle Button */
+  .water-analyzer__map-toggle {
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+
+  .water-analyzer__map-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+  }
+
+  .water-analyzer__map-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-2px);
+  }
+
+  /* Map Container */
+  .water-analyzer__map-container {
+    background: white;
+    border-radius: 15px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+
+  .water-analyzer__map-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .water-analyzer__map-header h4 {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  .water-analyzer__map-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+  }
+
+  .water-analyzer__map-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .water-analyzer__map {
+    height: 400px;
+    width: 100%;
+    background: #f0f0f0;
+    position: relative;
+  }
+
+  .water-analyzer__map-info {
+    padding: 1rem 1.5rem;
+    background: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+  }
+
+  .water-analyzer__map-info p {
+    margin: 0 0 1rem 0;
+    color: #333;
+  }
+
+  .water-analyzer__map-confirm {
+    background: var(--button-color);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+
+  .water-analyzer__map-confirm:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
   }
 
   .water-analyzer__form {
@@ -179,7 +320,7 @@
 
   .water-analyzer__button {
     padding: 0.875rem 1.5rem;
-    background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+    background: linear-gradient(45deg, var(--button-color), #ee5a52);
     color: white;
     border: none;
     border-radius: 25px;
@@ -253,7 +394,7 @@
     width: 40px;
     height: 40px;
     border: 3px solid #f3f3f3;
-    border-top: 3px solid #3498db;
+    border-top: 3px solid var(--primary-color);
     border-radius: 50%;
     animation: water-spin 1s linear infinite;
     margin: 0 auto 1rem;
@@ -261,7 +402,7 @@
 
   .water-analyzer__loading-title {
     margin: 0 0 0.5rem 0;
-    color: #333;
+    color: var(--text-color);
     font-size: 1.2rem;
   }
 
@@ -276,14 +417,14 @@
 
   /* Result Styles */
   .water-result {
-    border-radius: 12px;
+    border-radius: calc(var(--border-radius) * 0.6);
     padding: 1.5rem;
     margin: 1rem 0;
   }
 
   .water-result--location {
     background: #f8f9fa;
-    border-left: 4px solid #00d2ff;
+    border-left: 4px solid var(--primary-color);
   }
 
   .water-result--quality {
@@ -344,7 +485,7 @@
   @media (max-width: 768px) {
     .water-analyzer {
       margin: 1rem 0;
-      border-radius: 15px;
+      border-radius: calc(var(--border-radius) * 0.75);
     }
 
     .water-analyzer__header {
@@ -370,6 +511,10 @@
     .water-analyzer__examples {
       justify-content: center;
     }
+
+    .water-analyzer__map {
+      height: 300px;
+    }
   }
 
   @media (max-width: 480px) {
@@ -380,6 +525,12 @@
 
     .water-analyzer__examples-label {
       margin-bottom: 0.5rem;
+    }
+
+    .water-analyzer__map-header {
+      flex-direction: column;
+      gap: 0.5rem;
+      text-align: center;
     }
   }
 
@@ -414,6 +565,11 @@
   }
 </style>
 
+<!-- Leaflet CSS pour la carte -->
+{% if section.settings.enable_map %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+{% endif %}
+
 <script>
 (function() {
   'use strict';
@@ -423,31 +579,31 @@
     {
       name: 'AllOrigins',
       proxy: 'https://api.allorigins.win/get?url=',
-      parse: (data) => JSON.parse(data.contents),
+      parse: function(data) { return JSON.parse(data.contents); },
       timeout: 10000
     },
     {
       name: 'ProxyAnywhereHeroku', 
       proxy: 'https://cors-anywhere.herokuapp.com/',
-      parse: (data) => data,
+      parse: function(data) { return data; },
       timeout: 8000
     },
     {
       name: 'ThingProxy',
       proxy: 'https://thingproxy.freeboard.io/fetch/',
-      parse: (data) => data,
+      parse: function(data) { return data; },
       timeout: 8000
     },
     {
       name: 'ProxyCors',
       proxy: 'https://proxy.cors.sh/',
-      parse: (data) => data,
+      parse: function(data) { return data; },
       timeout: 8000
     },
     {
       name: 'Direct',
       proxy: '',
-      parse: (data) => data,
+      parse: function(data) { return data; },
       timeout: 5000
     }
   ];
@@ -456,10 +612,16 @@
   const CONFIG = {
     sectionId: '{{ section.id }}',
     debugMode: {{ section.settings.debug_mode | default: false }},
+    enableMap: {{ section.settings.enable_map | default: false }},
     maxRetries: 3,
     cacheTimeout: 300000, // 5 minutes
     dateRangeYears: 2
   };
+
+  // Variables globales pour la carte
+  let map = null;
+  let marker = null;
+  let selectedAddress = null;
 
   // Cache simple pour eviter les requetes repetees
   const cache = new Map();
@@ -474,30 +636,38 @@
     results: '[data-results]',
     debugInfo: '[data-debug-info]',
     debugText: '[data-debug-text]',
-    examples: '[data-example]'
+    examples: '[data-example]',
+    mapToggle: '[data-map-toggle]',
+    mapContainer: '[data-map-container]',
+    mapElement: '[data-map]',
+    mapClose: '[data-map-close]',
+    mapInfo: '[data-map-info]',
+    mapConfirm: '[data-map-confirm]',
+    selectedAddress: '[data-selected-address]'
   };
 
   // Utilitaires
   const utils = {
-    debounce(func, wait) {
+    debounce: function(func, wait) {
       let timeout;
-      return function executedFunction(...args) {
-        const later = () => {
+      return function executedFunction() {
+        const args = arguments;
+        const later = function() {
           clearTimeout(timeout);
-          func(...args);
+          func.apply(this, args);
         };
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
       };
     },
 
-    sanitizeHtml(str) {
+    sanitizeHtml: function(str) {
       const div = document.createElement('div');
       div.textContent = str;
       return div.innerHTML;
     },
 
-    formatDate(dateString) {
+    formatDate: function(dateString) {
       return new Date(dateString).toLocaleDateString('fr-FR', {
         year: 'numeric',
         month: 'long',
@@ -505,7 +675,7 @@
       });
     },
 
-    getCacheKey(address) {
+    getCacheKey: function(address) {
       return 'water_analysis_' + address.toLowerCase().replace(/\s+/g, '_');
     }
   };
@@ -527,6 +697,132 @@
       }
     }
   }
+
+  // Gestion de la carte interactive
+  const mapManager = {
+    init: function() {
+      if (!CONFIG.enableMap) return;
+      
+      debug('Initialisation de la carte interactive');
+      
+      // Charger Leaflet si pas deja charge
+      if (typeof L === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+        script.onload = function() {
+          mapManager.setupMap();
+        };
+        document.head.appendChild(script);
+      } else {
+        mapManager.setupMap();
+      }
+    },
+
+    setupMap: function() {
+      const mapElement = document.querySelector(selectors.mapElement);
+      if (!mapElement) return;
+
+      // Initialiser la carte centree sur la France
+      map = L.map(mapElement.id).setView([46.603354, 1.888334], 6);
+      
+      // Ajouter les tuiles OpenStreetMap
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
+
+      // Gestionnaire de clic sur la carte
+      map.on('click', mapManager.onMapClick);
+      
+      debug('Carte initialisee avec succes');
+    },
+
+    onMapClick: function(e) {
+      const lat = e.latlng.lat;
+      const lng = e.latlng.lng;
+      
+      debug('Clic sur la carte: ' + lat + ', ' + lng);
+      
+      // Supprimer le marqueur precedent
+      if (marker) {
+        map.removeLayer(marker);
+      }
+      
+      // Ajouter un nouveau marqueur
+      marker = L.marker([lat, lng]).addTo(map);
+      
+      // Geocodage inverse pour obtenir l'adresse
+      mapManager.reverseGeocode(lat, lng);
+    },
+
+    reverseGeocode: function(lat, lng) {
+      const url = 'https://api-adresse.data.gouv.fr/reverse/?lon=' + lng + '&lat=' + lat;
+      
+      fetchWithFallback(url).then(function(data) {
+        if (data && data.features && data.features.length > 0) {
+          const address = data.features[0].properties.label;
+          selectedAddress = address;
+          
+          // Afficher l'adresse selectionnee
+          const addressEl = document.querySelector(selectors.selectedAddress);
+          const mapInfo = document.querySelector(selectors.mapInfo);
+          
+          if (addressEl && mapInfo) {
+            addressEl.textContent = address;
+            mapInfo.style.display = 'block';
+          }
+          
+          debug('Adresse trouvee: ' + address);
+        } else {
+          debug('Aucune adresse trouvee pour ces coordonnees', 'warn');
+        }
+      }).catch(function(error) {
+        debug('Erreur lors du geocodage inverse: ' + error.message, 'error');
+      });
+    },
+
+    show: function() {
+      const container = document.querySelector(selectors.mapContainer);
+      if (container) {
+        container.style.display = 'block';
+        
+        // Redimensionner la carte apres affichage
+        setTimeout(function() {
+          if (map) {
+            map.invalidateSize();
+          }
+        }, 100);
+      }
+    },
+
+    hide: function() {
+      const container = document.querySelector(selectors.mapContainer);
+      if (container) {
+        container.style.display = 'none';
+      }
+      
+      // Reset
+      selectedAddress = null;
+      const mapInfo = document.querySelector(selectors.mapInfo);
+      if (mapInfo) {
+        mapInfo.style.display = 'none';
+      }
+    },
+
+    confirmAddress: function() {
+      if (selectedAddress) {
+        const input = document.querySelector(selectors.input);
+        if (input) {
+          input.value = selectedAddress;
+        }
+        mapManager.hide();
+        
+        // Lancer automatiquement l'analyse
+        setTimeout(function() {
+          handleFormSubmit({ preventDefault: function() {} });
+        }, 300);
+      }
+    }
+  };
 
   // Gestion des etats de l interface
   const ui = {
@@ -558,7 +854,7 @@
         const buttonIcon = button.querySelector('.water-analyzer__button-icon');
         
         if (buttonText) buttonText.textContent = text;
-        if (buttonIcon) buttonIcon.textContent = disabled ? '🔄' : '🔍';
+        if (buttonIcon) buttonIcon.textContent = disabled ? '🔄' : '{{ section.settings.button_icon | default: "🔍" }}';
       }
     },
 
@@ -839,7 +1135,7 @@
       showError(error.message);
     }).finally(function() {
       ui.hideLoading();
-      ui.toggleButton(false, 'Analyser');
+      ui.toggleButton(false, '{{ section.settings.button_text | default: "Analyser" }}');
     });
   }
 
@@ -887,6 +1183,30 @@
       });
     }
 
+    // Gestionnaires de la carte
+    if (CONFIG.enableMap) {
+      const mapToggle = document.querySelector(selectors.mapToggle);
+      const mapClose = document.querySelector(selectors.mapClose);
+      const mapConfirm = document.querySelector(selectors.mapConfirm);
+
+      if (mapToggle) {
+        mapToggle.addEventListener('click', function() {
+          mapManager.show();
+          if (!map) {
+            mapManager.init();
+          }
+        });
+      }
+
+      if (mapClose) {
+        mapClose.addEventListener('click', mapManager.hide);
+      }
+
+      if (mapConfirm) {
+        mapConfirm.addEventListener('click', mapManager.confirmAddress);
+      }
+    }
+
     debug('Analyseur initialise et pret');
   }
 
@@ -924,6 +1244,20 @@
     },
     {
       "type": "text",
+      "id": "search_title",
+      "label": "Titre de la section recherche",
+      "default": "Analysez votre eau",
+      "info": "Titre de la zone de recherche"
+    },
+    {
+      "type": "textarea",
+      "id": "search_description",
+      "label": "Description de la recherche",
+      "default": "Saisissez votre adresse pour obtenir un rapport de qualite detaille",
+      "info": "Texte explicatif pour la recherche"
+    },
+    {
+      "type": "text",
       "id": "placeholder",
       "label": "Placeholder du champ adresse",
       "default": "01000 Bourg-en-Bresse",
@@ -931,10 +1265,128 @@
     },
     {
       "type": "text",
+      "id": "button_text",
+      "label": "Texte du bouton",
+      "default": "Analyser",
+      "info": "Texte affiche sur le bouton d analyse"
+    },
+    {
+      "type": "header",
+      "content": "Icones et emojis"
+    },
+    {
+      "type": "text",
+      "id": "header_icon",
+      "label": "Icone du header",
+      "default": "🌊",
+      "info": "Emoji affiche dans le titre principal"
+    },
+    {
+      "type": "text",
+      "id": "search_icon",
+      "label": "Icone de recherche",
+      "default": "🏠",
+      "info": "Emoji affiche dans le titre de recherche"
+    },
+    {
+      "type": "text",
+      "id": "button_icon",
+      "label": "Icone du bouton",
+      "default": "🔍",
+      "info": "Emoji affiche dans le bouton"
+    },
+    {
+      "type": "text",
+      "id": "loading_icon",
+      "label": "Icone de chargement",
+      "default": "🔍",
+      "info": "Emoji affiche pendant le chargement"
+    },
+    {
+      "type": "header",
+      "content": "Couleurs et design"
+    },
+    {
+      "type": "color",
+      "id": "primary_color",
+      "label": "Couleur primaire",
+      "default": "#667eea",
+      "info": "Couleur principale du gradient de fond"
+    },
+    {
+      "type": "color",
+      "id": "secondary_color",
+      "label": "Couleur secondaire",
+      "default": "#764ba2",
+      "info": "Couleur secondaire du gradient de fond"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Couleur d accent",
+      "default": "#f093fb",
+      "info": "Couleur de la zone de recherche"
+    },
+    {
+      "type": "color",
+      "id": "button_color",
+      "label": "Couleur du bouton",
+      "default": "#ff6b6b",
+      "info": "Couleur du bouton d analyse"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Couleur du texte",
+      "default": "#333333",
+      "info": "Couleur du texte principal"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "Arrondi des bords",
+      "min": 0,
+      "max": 50,
+      "step": 5,
+      "default": 20,
+      "unit": "px",
+      "info": "Arrondi des coins de la section"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Espacement interne",
+      "min": 1,
+      "max": 5,
+      "step": 0.5,
+      "default": 2,
+      "unit": "rem",
+      "info": "Espacement interne de la section"
+    },
+    {
+      "type": "header",
+      "content": "Fonctionnalites"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_examples",
+      "label": "Afficher les exemples",
+      "default": true,
+      "info": "Affiche les boutons d exemples d adresses"
+    },
+    {
+      "type": "text",
       "id": "examples",
       "label": "Exemples d adresses",
       "default": "01000,Gex,Bourg-en-Bresse",
       "info": "Liste d exemples separes par des virgules"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_map",
+      "label": "Activer la carte interactive",
+      "default": false,
+      "info": "Permet de selectionner une adresse sur une carte"
     },
     {
       "type": "header",
