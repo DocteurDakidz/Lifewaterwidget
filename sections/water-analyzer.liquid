@@ -201,7 +201,7 @@
               class="water-analyzer__submit-button"
             >
               <span class="water-analyzer__button-icon">{{ section.settings.button_icon | default: '🔍' }}</span>
-              <span class="water-analyzer__button-text">{{ section.settings.button_text | default: 'Demander l\'analyse' }}</span>
+              <span class="water-analyzer__button-text">{% assign default_text = "Demander l'analyse" %}{{ section.settings.button_text | default: default_text }}</span>
             </button>
           </div>
 
