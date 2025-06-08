@@ -1,4 +1,4 @@
-<!-- Analyseur Eau Potable - Version Corrigée -->
+<!-- Analyseur Eau Potable - Version Sans Captcha -->
 <div class="water-analyzer" data-section-id="{{ section.id }}" style="
   --primary-color: {{ section.settings.primary_color | default: '#667eea' }};
   --secondary-color: {{ section.settings.secondary_color | default: '#764ba2' }};
@@ -25,9 +25,9 @@
   <!-- Main Content -->
   <div class="water-analyzer__content">
     
-    <!-- Formulaire de Contact Initial -->
+    <!-- Formulaire de Contact Initial - SANS SHOPIFY FORM -->
     <section class="water-analyzer__form-section" data-form-section>
-      {% form 'contact', class: 'water-analyzer__contact-form' %}
+      <div class="water-analyzer__contact-form">
         
         <div class="water-analyzer__search">
           <h3 class="water-analyzer__search-title">
@@ -49,11 +49,9 @@
               <input 
                 type="text" 
                 id="contact_address"
-                name="contact[address]"
                 class="water-analyzer__input"
                 placeholder="{{ section.settings.placeholder | default: '01000 Bourg-en-Bresse' }}"
                 required
-                value="{{ form.address }}"
               >
             </div>
 
@@ -65,11 +63,9 @@
               <input 
                 type="email" 
                 id="contact_email"
-                name="contact[email]"
                 class="water-analyzer__input"
                 placeholder="votre@email.com"
                 required
-                value="{{ form.email }}"
               >
             </div>
 
@@ -82,10 +78,8 @@
               <input 
                 type="text" 
                 id="contact_name"
-                name="contact[name]"
                 class="water-analyzer__input"
                 placeholder="Jean Dupont"
-                value="{{ form.name }}"
               >
             </div>
             {% endif %}
@@ -95,8 +89,7 @@
               <label class="water-analyzer__checkbox-label">
                 <input 
                   type="checkbox" 
-                  name="contact[advanced_analysis]"
-                  value="true"
+                  id="advanced_analysis"
                   class="water-analyzer__checkbox"
                 >
                 <span class="water-analyzer__checkmark"></span>
@@ -109,8 +102,7 @@
               <label class="water-analyzer__checkbox-label">
                 <input 
                   type="checkbox" 
-                  name="contact[consent]"
-                  value="true"
+                  id="consent"
                   required
                   class="water-analyzer__checkbox"
                 >
@@ -124,7 +116,8 @@
           <!-- Bouton de soumission -->
           <div class="water-analyzer__submit-section">
             <button 
-              type="submit"
+              type="button"
+              id="submit-analysis"
               class="water-analyzer__submit-button"
             >
               <span class="water-analyzer__button-icon">{{ section.settings.button_icon | default: '🔍' }}</span>
@@ -150,12 +143,8 @@
           {% endif %}
 
         </div>
-
-        <!-- Champs cachés -->
-        <input type="hidden" name="contact[tags]" value="water-analysis,{{ section.settings.contact_tags | default: 'lead' }}">
-        <input type="hidden" name="contact[subject]" value="Demande d'analyse eau - {{ section.settings.title }}">
         
-      {% endform %}
+      </div>
     </section>
 
     <!-- Section d'analyse avec carte -->
@@ -897,7 +886,6 @@
   // Sélecteurs DOM
   const selectors = {
     formSection: '[data-form-section]',
-    contactForm: '.water-analyzer__contact-form',
     analysisSection: '[data-analysis-section]',
     analysisInput: '[data-analysis-input]',
     analysisButton: '[data-analysis-button]',
@@ -1380,17 +1368,15 @@
 
   // Initialisation
   function init() {
-    console.log('🌊 Water Analyzer initialized');
+    console.log('🌊 Water Analyzer (Sans Captcha) initialized');
 
-    // Gestionnaire du formulaire de contact - CORRECTION PRINCIPALE
-    const contactForm = document.querySelector(selectors.contactForm);
-    if (contactForm) {
-      contactForm.addEventListener('submit', function(e) {
-        e.preventDefault(); // EMPÊCHE LA SOUMISSION NORMALE
-        
-        const addressInput = contactForm.querySelector('[name="contact[address]"]');
-        const emailInput = contactForm.querySelector('[name="contact[email]"]');
-        const consentInput = contactForm.querySelector('[name="contact[consent]"]');
+    // Gestionnaire du bouton de soumission - SANS FORMULAIRE SHOPIFY
+    const submitButton = document.getElementById('submit-analysis');
+    if (submitButton) {
+      submitButton.addEventListener('click', function() {
+        const addressInput = document.getElementById('contact_address');
+        const emailInput = document.getElementById('contact_email');
+        const consentInput = document.getElementById('consent');
 
         if (!addressInput?.value || !emailInput?.value) {
           alert('Veuillez remplir tous les champs obligatoires');
