@@ -1,4 +1,4 @@
-<!-- Analyseur Eau Potable - Version Simplifiée avec Formulaire + Analyse -->
+<!-- Analyseur Eau Potable - Version Sans Captcha -->
 <div class="water-analyzer" data-section-id="{{ section.id }}" style="
   --primary-color: {{ section.settings.primary_color | default: '#667eea' }};
   --secondary-color: {{ section.settings.secondary_color | default: '#764ba2' }};
@@ -33,159 +33,146 @@
           {{ section.settings.search_description | default: 'Saisissez votre adresse pour obtenir un rapport de qualité détaillé' }}
         </p>
 
-        <!-- Message de succès (affiché si formulaire soumis avec succès) -->
-        {% if form.posted_successfully? %}
-          <div class="water-analyzer__success-message" data-success-message>
-            <div class="water-analyzer__success-content">
-              <h4>✅ Votre demande a été envoyée avec succès !</h4>
-              <p>Lancement de l'analyse automatique...</p>
-              <div class="water-analyzer__auto-progress">
-                <div class="water-analyzer__auto-bar"></div>
-              </div>
-            </div>
-          </div>
-        {% else %}
-          <!-- Formulaire de contact -->
-          {% form 'contact', class: 'water-analyzer__contact-form' %}
+        <!-- Formulaire personnalisé (sans Shopify) -->
+        <form class="water-analyzer__custom-form" data-custom-form>
+          
+          <!-- Champs du formulaire -->
+          <div class="water-analyzer__form-fields">
             
-            <!-- Affichage des erreurs -->
-            {% if form.errors %}
-              <div class="water-analyzer__form-errors">
-                <h4>❌ Erreurs dans le formulaire :</h4>
-                <ul>
-                  {% for field in form.errors %}
-                    <li><strong>{{ field | first | capitalize }}:</strong> {{ field | last }}</li>
-                  {% endfor %}
-                </ul>
-              </div>
-            {% endif %}
-
-            <!-- Champs du formulaire -->
-            <div class="water-analyzer__form-fields">
-              
-              <!-- Adresse (obligatoire) -->
-              <div class="water-analyzer__field-group">
-                <label for="contact_address" class="water-analyzer__label">
-                  🏠 Votre adresse *
-                </label>
-                <input 
-                  type="text" 
-                  id="contact_address"
-                  name="contact[address]"
-                  class="water-analyzer__input"
-                  placeholder="{{ section.settings.placeholder | default: '01000 Bourg-en-Bresse' }}"
-                  required
-                  value="{{ form.address }}"
-                >
-              </div>
-
-              <!-- Email (obligatoire) -->
-              <div class="water-analyzer__field-group">
-                <label for="contact_email" class="water-analyzer__label">
-                  📧 Votre email *
-                </label>
-                <input 
-                  type="email" 
-                  id="contact_email"
-                  name="contact[email]"
-                  class="water-analyzer__input"
-                  placeholder="votre@email.com"
-                  required
-                  value="{{ form.email }}"
-                >
-              </div>
-
-              <!-- Nom (optionnel) -->
-              {% if section.settings.collect_name %}
-              <div class="water-analyzer__field-group">
-                <label for="contact_name" class="water-analyzer__label">
-                  👤 Votre nom
-                </label>
-                <input 
-                  type="text" 
-                  id="contact_name"
-                  name="contact[name]"
-                  class="water-analyzer__input"
-                  placeholder="Jean Dupont"
-                  value="{{ form.name }}"
-                >
-              </div>
-              {% endif %}
-
-              <!-- Option analyse approfondie -->
-              <div class="water-analyzer__field-group water-analyzer__advanced-option">
-                <label class="water-analyzer__checkbox-label">
-                  <input 
-                    type="checkbox" 
-                    name="contact[advanced_analysis]"
-                    value="true"
-                    class="water-analyzer__checkbox"
-                    required
-                  >
-                  <span class="water-analyzer__checkmark"></span>
-                  Je souhaite être contacté pour une analyse approfondie gratuite *
-                </label>
-              </div>
-
-              <!-- Consentement RGPD -->
-              <div class="water-analyzer__field-group water-analyzer__consent">
-                <label class="water-analyzer__checkbox-label">
-                  <input 
-                    type="checkbox" 
-                    name="contact[consent]"
-                    value="true"
-                    required
-                    class="water-analyzer__checkbox"
-                  >
-                  <span class="water-analyzer__checkmark"></span>
-                  J'accepte les CGV et l'utilisation de mes données pour cette analyse *
-                </label>
-              </div>
-
-            </div>
-
-            <!-- Bouton de soumission -->
-            <div class="water-analyzer__submit-section">
-              <button 
-                type="submit"
-                class="water-analyzer__submit-button"
-                data-submit-button
+            <!-- Adresse (obligatoire) -->
+            <div class="water-analyzer__field-group">
+              <label for="custom_address" class="water-analyzer__label">
+                🏠 Votre adresse *
+              </label>
+              <input 
+                type="text" 
+                id="custom_address"
+                name="address"
+                class="water-analyzer__input"
+                placeholder="{{ section.settings.placeholder | default: '01000 Bourg-en-Bresse' }}"
+                required
+                data-address-input
               >
-                <span class="water-analyzer__button-icon">{{ section.settings.button_icon | default: '🔍' }}</span>
-                <span class="water-analyzer__button-text">{{ section.settings.button_text | default: 'Lancer l analyse' }}</span>
-              </button>
             </div>
 
-            <!-- Exemples d'adresses -->
-            {% if section.settings.show_examples %}
-            <div class="water-analyzer__examples">
-              <span class="water-analyzer__examples-label">💡 Exemples :</span>
-              {% assign examples = section.settings.examples | default: '01000,Gex,Bourg-en-Bresse' | split: ',' %}
-              {% for example in examples %}
-                <button 
-                  type="button" 
-                  class="water-analyzer__example"
-                  data-example="{{ example | strip }}"
-                >
-                  {{ example | strip }}
-                </button>
-              {% endfor %}
+            <!-- Email (obligatoire) -->
+            <div class="water-analyzer__field-group">
+              <label for="custom_email" class="water-analyzer__label">
+                📧 Votre email *
+              </label>
+              <input 
+                type="email" 
+                id="custom_email"
+                name="email"
+                class="water-analyzer__input"
+                placeholder="votre@email.com"
+                required
+                data-email-input
+              >
+            </div>
+
+            <!-- Nom (optionnel) -->
+            {% if section.settings.collect_name %}
+            <div class="water-analyzer__field-group">
+              <label for="custom_name" class="water-analyzer__label">
+                👤 Votre nom
+              </label>
+              <input 
+                type="text" 
+                id="custom_name"
+                name="name"
+                class="water-analyzer__input"
+                placeholder="Jean Dupont"
+                data-name-input
+              >
             </div>
             {% endif %}
 
-            <!-- Champs cachés -->
-            <input type="hidden" name="contact[tags]" value="water-analysis,{{ section.settings.contact_tags | default: 'lead' }}">
-            <input type="hidden" name="contact[subject]" value="Demande d'analyse eau - {{ section.settings.title }}">
-            
-          {% endform %}
-        {% endif %}
+            <!-- Option analyse approfondie -->
+            <div class="water-analyzer__field-group water-analyzer__advanced-option">
+              <label class="water-analyzer__checkbox-label">
+                <input 
+                  type="checkbox" 
+                  name="advanced_analysis"
+                  value="true"
+                  class="water-analyzer__checkbox"
+                  required
+                  data-advanced-checkbox
+                >
+                <span class="water-analyzer__checkmark"></span>
+                Je souhaite être contacté pour une analyse approfondie gratuite *
+              </label>
+            </div>
+
+            <!-- Consentement RGPD -->
+            <div class="water-analyzer__field-group water-analyzer__consent">
+              <label class="water-analyzer__checkbox-label">
+                <input 
+                  type="checkbox" 
+                  name="consent"
+                  value="true"
+                  required
+                  class="water-analyzer__checkbox"
+                  data-consent-checkbox
+                >
+                <span class="water-analyzer__checkmark"></span>
+                J'accepte les CGV et l'utilisation de mes données pour cette analyse *
+              </label>
+            </div>
+
+          </div>
+
+          <!-- Bouton de soumission -->
+          <div class="water-analyzer__submit-section">
+            <button 
+              type="submit"
+              class="water-analyzer__submit-button"
+              data-submit-button
+            >
+              <span class="water-analyzer__button-icon">{{ section.settings.button_icon | default: '🔍' }}</span>
+              <span class="water-analyzer__button-text">{{ section.settings.button_text | default: 'Lancer l analyse' }}</span>
+            </button>
+          </div>
+
+          <!-- Exemples d'adresses -->
+          {% if section.settings.show_examples %}
+          <div class="water-analyzer__examples">
+            <span class="water-analyzer__examples-label">💡 Exemples :</span>
+            {% assign examples = section.settings.examples | default: '01000,Gex,Bourg-en-Bresse' | split: ',' %}
+            {% for example in examples %}
+              <button 
+                type="button" 
+                class="water-analyzer__example"
+                data-example="{{ example | strip }}"
+              >
+                {{ example | strip }}
+              </button>
+            {% endfor %}
+          </div>
+          {% endif %}
+          
+        </form>
 
       </div>
     </section>
 
-    <!-- Section d'analyse (affichée après soumission du formulaire) -->
-    {% if form.posted_successfully? %}
-    <section class="water-analyzer__analysis-section" data-analysis-section>
+    <!-- Message de remerciement (caché par défaut) -->
+    <section class="water-analyzer__thank-you" data-thank-you style="display: none;">
+      <div class="water-analyzer__thank-you-content">
+        <h3>✅ Merci pour votre demande !</h3>
+        <p>Nous avons bien reçu votre demande d'analyse pour <strong data-submitted-address></strong></p>
+        <p>Vous recevrez les résultats détaillés par email sous 24h.</p>
+        <div class="water-analyzer__continue">
+          <p>En attendant, découvrez un aperçu de la qualité de l'eau dans votre région :</p>
+          <div class="water-analyzer__auto-progress">
+            <div class="water-analyzer__auto-bar"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section d'analyse (cachée par défaut) -->
+    <section class="water-analyzer__analysis-section" data-analysis-section style="display: none;">
       
       <!-- Toggle carte -->
       {% if section.settings.enable_map %}
@@ -226,7 +213,6 @@
             class="water-analyzer__input"
             placeholder="{{ section.settings.placeholder | default: '01000 Bourg-en-Bresse' }}"
             data-analysis-input
-            value="{{ form.address }}"
             readonly
           >
           <button 
@@ -250,7 +236,7 @@
           <div class="water-analyzer__progress-text" data-progress-text">0%</div>
         </div>
         <h4 class="water-analyzer__loading-title">🔍 Analyse en cours...</h4>
-        <p class="water-analyzer__loading-text" data-loading-text">
+        <p class="water-analyzer__loading-text" data-loading-text>
           Étape 1: Localisation de l'adresse...
         </p>
       </div>
@@ -261,7 +247,6 @@
       </div>
 
     </section>
-    {% endif %}
 
   </div>
 </div>
@@ -329,24 +314,35 @@
     opacity: 0.95;
   }
 
-  /* Message de succès */
-  .water-analyzer__success-message {
+  /* Message de remerciement */
+  .water-analyzer__thank-you {
+    background: linear-gradient(135deg, #a8e6cf 0%, #dcedc1 100%);
+    padding: var(--section-padding);
+    border-radius: calc(var(--border-radius) * 0.75);
+    margin-bottom: var(--section-padding);
     text-align: center;
-    padding: 2rem 1rem;
+    animation: fadeInUp 0.6s ease-out;
   }
 
-  .water-analyzer__success-content h4 {
+  .water-analyzer__thank-you h3 {
     margin: 0 0 1rem 0;
-    font-size: 1.3rem;
+    color: #2d5a27;
+    font-size: 1.5rem;
   }
 
-  .water-analyzer__success-content p {
-    margin: 0 0 1.5rem 0;
-    opacity: 0.9;
+  .water-analyzer__thank-you p {
+    margin: 0.5rem 0;
+    color: #2d5a27;
+  }
+
+  .water-analyzer__continue {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid rgba(45, 90, 39, 0.2);
   }
 
   .water-analyzer__auto-progress {
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(45, 90, 39, 0.3);
     border-radius: 10px;
     height: 8px;
     overflow: hidden;
@@ -355,7 +351,7 @@
   }
 
   .water-analyzer__auto-bar {
-    background: white;
+    background: #2d5a27;
     height: 100%;
     width: 0%;
     border-radius: 10px;
@@ -365,29 +361,6 @@
   @keyframes autoProgress {
     0% { width: 0%; }
     100% { width: 100%; }
-  }
-
-  /* Erreurs de formulaire */
-  .water-analyzer__form-errors {
-    background: rgba(255, 255, 255, 0.15);
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 10px;
-    padding: 1rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .water-analyzer__form-errors h4 {
-    margin: 0 0 0.5rem 0;
-    font-size: 1rem;
-  }
-
-  .water-analyzer__form-errors ul {
-    margin: 0;
-    padding-left: 1.5rem;
-  }
-
-  .water-analyzer__form-errors li {
-    margin: 0.25rem 0;
   }
 
   /* Champs de formulaire */
@@ -912,6 +885,7 @@
       animation: none;
     }
 
+    .water-analyzer__thank-you,
     .water-analyzer__analysis-section,
     .water-analyzer__results {
       animation: none;
@@ -968,7 +942,8 @@
     enableMap: {{ section.settings.enable_map | default: false }},
     maxRetries: 3,
     cacheTimeout: 300000,
-    dateRangeYears: 2
+    dateRangeYears: 2,
+    shopifyContactEndpoint: '/contact'
   };
 
   // Variables globales
@@ -976,13 +951,15 @@
   let marker = null;
   let selectedAddress = null;
   let analysisInProgress = false;
+  let submittedData = null;
   const cache = new Map();
 
   // Sélecteurs DOM
   const selectors = {
     formSection: '[data-form-section]',
-    contactForm: '.water-analyzer__contact-form',
-    successMessage: '[data-success-message]',
+    customForm: '[data-custom-form]',
+    thankYou: '[data-thank-you]',
+    submittedAddress: '[data-submitted-address]',
     analysisSection: '[data-analysis-section]',
     analysisInput: '[data-analysis-input]',
     analysisButton: '[data-analysis-button]',
@@ -993,6 +970,11 @@
     results: '[data-results]',
     examples: '[data-example]',
     submitButton: '[data-submit-button]',
+    addressInput: '[data-address-input]',
+    emailInput: '[data-email-input]',
+    nameInput: '[data-name-input]',
+    advancedCheckbox: '[data-advanced-checkbox]',
+    consentCheckbox: '[data-consent-checkbox]',
     mapToggle: '[data-map-toggle]',
     mapContainer: '[data-map-container]',
     mapElement: '[data-map]',
@@ -1020,6 +1002,11 @@
 
     getCacheKey: function(address) {
       return 'water_analysis_' + address.toLowerCase().replace(/\s+/g, '_');
+    },
+
+    validateEmail: function(email) {
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return re.test(email);
     }
   };
 
@@ -1093,8 +1080,69 @@
           });
         }, 100);
       }
+    },
+
+    showThankYou: function(address) {
+      const formSection = document.querySelector(selectors.formSection);
+      const thankYou = document.querySelector(selectors.thankYou);
+      const submittedAddressEl = document.querySelector(selectors.submittedAddress);
+      const analysisSection = document.querySelector(selectors.analysisSection);
+      const analysisInput = document.querySelector(selectors.analysisInput);
+      
+      if (formSection) formSection.style.display = 'none';
+      if (thankYou) thankYou.style.display = 'block';
+      if (submittedAddressEl) submittedAddressEl.textContent = address;
+      if (analysisSection) analysisSection.style.display = 'block';
+      if (analysisInput) analysisInput.value = address;
+      
+      // Lancement automatique de l'analyse après 3 secondes
+      setTimeout(function() {
+        startAnalysis(address);
+      }, 3000);
+    },
+
+    toggleSubmitButton: function(disabled, text) {
+      const button = document.querySelector(selectors.submitButton);
+      if (!button) return;
+
+      button.disabled = disabled;
+      
+      if (text) {
+        const buttonText = button.querySelector('.water-analyzer__button-text');
+        const buttonIcon = button.querySelector('.water-analyzer__button-icon');
+        
+        if (buttonText) buttonText.textContent = text;
+        if (buttonIcon) buttonIcon.textContent = disabled ? '⏳' : '🔍';
+      }
     }
   };
+
+  // Envoi des données à Shopify
+  function sendToShopify(formData) {
+    const data = new FormData();
+    data.append('contact[email]', formData.email);
+    data.append('contact[name]', formData.name || '');
+    data.append('contact[body]', `
+Demande d'analyse eau potable
+
+Adresse: ${formData.address}
+Email: ${formData.email}
+Nom: ${formData.name || 'Non renseigné'}
+Analyse approfondie: ${formData.advancedAnalysis ? 'Oui' : 'Non'}
+Consentement: ${formData.consent ? 'Accepté' : 'Refusé'}
+
+Date: ${new Date().toLocaleString('fr-FR')}
+    `);
+    data.append('contact[tags]', 'water-analysis,lead');
+
+    return fetch(CONFIG.shopifyContactEndpoint, {
+      method: 'POST',
+      body: data,
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+  }
 
   // Fonction de fetch avec timeout
   function fetchWithTimeout(url, options) {
@@ -1327,37 +1375,89 @@
     ui.showResults(html);
   }
 
+  // Lancement de l'analyse
+  function startAnalysis(address) {
+    analyzeWater(address).then(function(result) {
+      const html = generateResultsHtml(result.location, result.qualityData);
+      ui.showResults(html);
+    }).catch(function(error) {
+      showError(error.message);
+    }).finally(function() {
+      ui.hideLoading();
+    });
+  }
+
+  // Gestionnaire de soumission du formulaire
+  function handleFormSubmit(e) {
+    e.preventDefault();
+    
+    const addressInput = document.querySelector(selectors.addressInput);
+    const emailInput = document.querySelector(selectors.emailInput);
+    const nameInput = document.querySelector(selectors.nameInput);
+    const advancedCheckbox = document.querySelector(selectors.advancedCheckbox);
+    const consentCheckbox = document.querySelector(selectors.consentCheckbox);
+    
+    const formData = {
+      address: addressInput ? addressInput.value.trim() : '',
+      email: emailInput ? emailInput.value.trim() : '',
+      name: nameInput ? nameInput.value.trim() : '',
+      advancedAnalysis: advancedCheckbox ? advancedCheckbox.checked : false,
+      consent: consentCheckbox ? consentCheckbox.checked : false
+    };
+
+    // Validation
+    if (!formData.address) {
+      alert('Veuillez saisir une adresse');
+      return;
+    }
+
+    if (!formData.email || !utils.validateEmail(formData.email)) {
+      alert('Veuillez saisir un email valide');
+      return;
+    }
+
+    if (!formData.advancedAnalysis) {
+      alert('Veuillez accepter d\'être contacté pour l\'analyse approfondie');
+      return;
+    }
+
+    if (!formData.consent) {
+      alert('Veuillez accepter les CGV et l\'utilisation de vos données');
+      return;
+    }
+
+    ui.toggleSubmitButton(true, 'Envoi en cours...');
+    submittedData = formData;
+
+    // Envoi à Shopify (optionnel, en arrière-plan)
+    sendToShopify(formData).catch(function(error) {
+      console.warn('Erreur envoi Shopify:', error);
+    });
+
+    // Affichage du message de remerciement et lancement de l'analyse
+    setTimeout(function() {
+      ui.showThankYou(formData.address);
+    }, 1000);
+  }
+
   // Gestionnaire des exemples
   function setExample(address) {
-    const input = document.querySelector('#contact_address');
+    const input = document.querySelector(selectors.addressInput);
     if (input) {
       input.value = address;
       input.focus();
     }
   }
 
-  // Lancement automatique de l'analyse après soumission
-  function autoStartAnalysis() {
-    const analysisInput = document.querySelector(selectors.analysisInput);
-    const address = analysisInput ? analysisInput.value.trim() : '';
-    
-    if (address) {
-      setTimeout(function() {
-        analyzeWater(address).then(function(result) {
-          const html = generateResultsHtml(result.location, result.qualityData);
-          ui.showResults(html);
-        }).catch(function(error) {
-          showError(error.message);
-        }).finally(function() {
-          ui.hideLoading();
-        });
-      }, 3000); // Délai de 3 secondes pour l'animation de progression
-    }
-  }
-
   // Initialisation
   function init() {
-    console.log('🌊 Water Analyzer initialized');
+    console.log('🌊 Water Analyzer (No Captcha) initialized');
+
+    // Gestionnaire du formulaire personnalisé
+    const customForm = document.querySelector(selectors.customForm);
+    if (customForm) {
+      customForm.addEventListener('submit', handleFormSubmit);
+    }
 
     // Gestionnaire des exemples
     const examples = document.querySelectorAll(selectors.examples);
@@ -1373,24 +1473,19 @@
       });
     });
 
-    // Validation du formulaire
-    const contactForm = document.querySelector(selectors.contactForm);
-    if (contactForm) {
-      contactForm.addEventListener('submit', function(e) {
-        const submitButton = document.querySelector(selectors.submitButton);
-        
-        if (submitButton) {
-          submitButton.disabled = true;
-          submitButton.innerHTML = '<span class="water-analyzer__button-icon">⏳</span><span class="water-analyzer__button-text">Envoi en cours...</span>';
+    // Gestionnaire Enter sur les inputs
+    const inputs = document.querySelectorAll(selectors.addressInput + ', ' + selectors.emailInput + ', ' + selectors.nameInput);
+    inputs.forEach(function(input) {
+      input.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const form = this.closest('form');
+          if (form) {
+            form.dispatchEvent(new Event('submit'));
+          }
         }
       });
-    }
-
-    // Lancement automatique si formulaire déjà soumis
-    const successMessage = document.querySelector(selectors.successMessage);
-    if (successMessage) {
-      autoStartAnalysis();
-    }
+    });
   }
 
   // Démarrage
