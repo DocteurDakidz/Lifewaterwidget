@@ -6,13 +6,18 @@
   --button-color: {{ section.settings.button_color | default: '#ff6b6b' }};
   --text-color: {{ section.settings.text_color | default: '#333333' }};
   --background-color: {{ section.settings.background_color | default: '#ffffff' }};
+  --header-bg-color: {{ section.settings.header_bg_color | default: '#4facfe' }};
   --border-radius: {{ section.settings.border_radius | default: 20 }}px;
   --section-padding: {{ section.settings.section_padding | default: 2 }}rem;
 ">
   <!-- Header (conditionnel) -->
   {% if section.settings.show_header %}
   <header class="water-analyzer__header" style="
-    background: {{ section.settings.header_background | default: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' }};
+    {% if section.settings.use_gradient_header %}
+      background: linear-gradient(135deg, var(--header-bg-color) 0%, {{ section.settings.header_bg_color_end | default: '#00f2fe' }} 100%);
+    {% else %}
+      background: var(--header-bg-color);
+    {% endif %}
     color: {{ section.settings.header_text_color | default: '#ffffff' }};
   ">
     <h2 class="water-analyzer__title">
@@ -1234,9 +1239,23 @@
     },
     {
       "type": "color",
-      "id": "header_background",
-      "label": "Fond de l'en-tete",
-      "default": "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
+      "id": "header_bg_color",
+      "label": "Couleur de fond en-tete",
+      "default": "#4facfe"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_gradient_header",
+      "label": "Utiliser un gradient pour l'en-tete",
+      "default": true,
+      "info": "Active un gradient entre les deux couleurs d'en-tete"
+    },
+    {
+      "type": "color",
+      "id": "header_bg_color_end",
+      "label": "Couleur de fin du gradient en-tete",
+      "default": "#00f2fe",
+      "info": "Couleur de fin si le gradient est active"
     },
     {
       "type": "color",
