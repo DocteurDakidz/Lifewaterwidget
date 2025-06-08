@@ -4,10 +4,10 @@
   <header class="water-analyzer__header">
     <h2 class="water-analyzer__title">
       <span class="water-analyzer__icon">🌊</span>
-      {{ section.settings.title | default: 'Analyseur Qualité Eau Potable' }}
+      {{ section.settings.title | default: 'Analyseur Qualite Eau Potable' }}
     </h2>
     <p class="water-analyzer__subtitle">
-      {{ section.settings.subtitle | default: 'Découvrez la qualité de l\'eau à votre adresse' }}
+      {{ section.settings.subtitle | default: 'Decouvrez la qualite de l eau a votre adresse' }}
     </p>
   </header>
 
@@ -21,7 +21,7 @@
         Analysez votre eau
       </h3>
       <p class="water-analyzer__search-description">
-        Saisissez votre adresse pour obtenir un rapport de qualité détaillé
+        Saisissez votre adresse pour obtenir un rapport de qualite detaille
       </p>
       
       <form class="water-analyzer__form" data-water-form>
@@ -33,13 +33,13 @@
             placeholder="{{ section.settings.placeholder | default: '01000 Bourg-en-Bresse' }}"
             autocomplete="address-line1"
             required
-            aria-label="Adresse à analyser"
+            aria-label="Adresse a analyser"
           >
           <button 
             type="submit"
             class="water-analyzer__button"
             data-water-button
-            aria-label="Lancer l'analyse"
+            aria-label="Lancer l analyse"
           >
             <span class="water-analyzer__button-icon">🔍</span>
             <span class="water-analyzer__button-text">Analyser</span>
@@ -76,7 +76,7 @@
       <div class="water-analyzer__spinner" aria-hidden="true"></div>
       <h4 class="water-analyzer__loading-title">🔍 Analyse en cours...</h4>
       <p class="water-analyzer__loading-text" data-loading-text>
-        Étape 1: Localisation de l'adresse...
+        Etape 1: Localisation de l adresse...
       </p>
     </div>
 
@@ -418,7 +418,7 @@
 (function() {
   'use strict';
   
-  // Configuration avec système de fallback CORS amélioré
+  // Configuration avec systeme de fallback CORS ameliore
   const CORS_METHODS = [
     {
       name: 'AllOrigins',
@@ -461,13 +461,13 @@
     dateRangeYears: 2
   };
 
-  // Cache simple pour éviter les requêtes répétées
+  // Cache simple pour eviter les requetes repetees
   const cache = new Map();
 
-  // Sélecteurs DOM
+  // Selecteurs DOM
   const selectors = {
     form: '[data-water-form]',
-    input: `#water-input-${CONFIG.sectionId}`,
+    input: '#water-input-' + CONFIG.sectionId,
     button: '[data-water-button]',
     loading: '[data-loading]',
     loadingText: '[data-loading-text]',
@@ -506,14 +506,15 @@
     },
 
     getCacheKey(address) {
-      return `water_analysis_${address.toLowerCase().replace(/\s+/g, '_')}`;
+      return 'water_analysis_' + address.toLowerCase().replace(/\s+/g, '_');
     }
   };
 
-  // Fonction de debug améliorée
-  function debug(message, type = 'info') {
+  // Fonction de debug amelioree
+  function debug(message, type) {
+    type = type || 'info';
     const timestamp = new Date().toLocaleTimeString('fr-FR');
-    const logMessage = `[${timestamp}] 🌊 Water Analyzer: ${message}`;
+    const logMessage = '[' + timestamp + '] 🌊 Water Analyzer: ' + message;
     
     console[type](logMessage);
     
@@ -522,14 +523,15 @@
       const debugText = document.querySelector(selectors.debugText);
       if (debugEl && debugText) {
         debugEl.style.display = 'block';
-        debugText.textContent = `${timestamp} - ${message}`;
+        debugText.textContent = timestamp + ' - ' + message;
       }
     }
   }
 
-  // Gestion des états de l'interface
+  // Gestion des etats de l interface
   const ui = {
-    showLoading(step = 'Initialisation...') {
+    showLoading: function(step) {
+      step = step || 'Initialisation...';
       const loading = document.querySelector(selectors.loading);
       const results = document.querySelector(selectors.results);
       const loadingText = document.querySelector(selectors.loadingText);
@@ -539,12 +541,13 @@
       if (loadingText) loadingText.textContent = step;
     },
 
-    hideLoading() {
+    hideLoading: function() {
       const loading = document.querySelector(selectors.loading);
       if (loading) loading.style.display = 'none';
     },
 
-    toggleButton(disabled = false, text = null) {
+    toggleButton: function(disabled, text) {
+      disabled = disabled || false;
       const button = document.querySelector(selectors.button);
       if (!button) return;
 
@@ -559,14 +562,14 @@
       }
     },
 
-    showResults(html) {
+    showResults: function(html) {
       const results = document.querySelector(selectors.results);
       if (results) {
         results.innerHTML = html;
         results.style.display = 'block';
         
-        // Scroll fluide vers les résultats
-        setTimeout(() => {
+        // Scroll fluide vers les resultats
+        setTimeout(function() {
           results.scrollIntoView({ 
             behavior: 'smooth', 
             block: 'start' 
@@ -577,261 +580,250 @@
   };
 
   // Fonction de fetch avec timeout et retry
-  async function fetchWithTimeout(url, options = {}) {
-    const { timeout = 5000, ...fetchOptions } = options;
+  function fetchWithTimeout(url, options) {
+    options = options || {};
+    const timeout = options.timeout || 5000;
+    const fetchOptions = Object.assign({}, options);
+    delete fetchOptions.timeout;
     
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    const timeoutId = setTimeout(function() {
+      controller.abort();
+    }, timeout);
     
-    try {
-      const response = await fetch(url, {
-        ...fetchOptions,
-        signal: controller.signal
-      });
+    fetchOptions.signal = controller.signal;
+    
+    return fetch(url, fetchOptions).then(function(response) {
       clearTimeout(timeoutId);
       return response;
-    } catch (error) {
+    }).catch(function(error) {
       clearTimeout(timeoutId);
       throw error;
-    }
+    });
   }
 
-  // Fonction de fetch avec fallback améliorée
-  async function fetchWithFallback(url, methodIndex = 0, retryCount = 0) {
+  // Fonction de fetch avec fallback amelioree
+  function fetchWithFallback(url, methodIndex, retryCount) {
+    methodIndex = methodIndex || 0;
+    retryCount = retryCount || 0;
+    
     if (methodIndex >= CORS_METHODS.length) {
-      throw new Error('Toutes les méthodes de connexion ont échoué. Vérifiez votre connexion internet.');
+      throw new Error('Toutes les methodes de connexion ont echoue. Verifiez votre connexion internet.');
     }
 
     const method = CORS_METHODS[methodIndex];
-    debug(`Tentative ${methodIndex + 1}/${CORS_METHODS.length}: ${method.name} (retry: ${retryCount})`);
+    debug('Tentative ' + (methodIndex + 1) + '/' + CORS_METHODS.length + ': ' + method.name + ' (retry: ' + retryCount + ')');
 
-    try {
-      const proxyUrl = method.proxy ? `${method.proxy}${encodeURIComponent(url)}` : url;
-      
-      const response = await fetchWithTimeout(proxyUrl, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'User-Agent': 'WaterAnalyzer/1.0'
-        },
-        mode: 'cors',
-        timeout: method.timeout
-      });
-
+    const proxyUrl = method.proxy ? method.proxy + encodeURIComponent(url) : url;
+    
+    return fetchWithTimeout(proxyUrl, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'WaterAnalyzer/1.0'
+      },
+      mode: 'cors',
+      timeout: method.timeout
+    }).then(function(response) {
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        throw new Error('HTTP ' + response.status + ': ' + response.statusText);
       }
-
-      const data = await response.json();
+      return response.json();
+    }).then(function(data) {
       const parsedData = method.parse(data);
-      
-      debug(`Succès avec ${method.name}`);
+      debug('Succes avec ' + method.name);
       return parsedData;
-
-    } catch (error) {
-      debug(`Méthode ${method.name} échouée: ${error.message}`, 'warn');
+    }).catch(function(error) {
+      debug('Methode ' + method.name + ' echouee: ' + error.message, 'warn');
       
-      // Retry avec la même méthode si pas encore fait
+      // Retry avec la meme methode si pas encore fait
       if (retryCount < CONFIG.maxRetries) {
-        await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
-        return fetchWithFallback(url, methodIndex, retryCount + 1);
+        return new Promise(function(resolve) {
+          setTimeout(resolve, 1000 * (retryCount + 1));
+        }).then(function() {
+          return fetchWithFallback(url, methodIndex, retryCount + 1);
+        });
       }
       
-      // Essayer la méthode suivante
+      // Essayer la methode suivante
       return fetchWithFallback(url, methodIndex + 1, 0);
-    }
+    });
   }
 
-  // Fonction principale d'analyse
-  async function analyzeWater(address) {
-    if (!address?.trim()) {
+  // Fonction principale d analyse
+  function analyzeWater(address) {
+    if (!address || !address.trim()) {
       throw new Error('Veuillez saisir une adresse valide');
     }
 
     const cacheKey = utils.getCacheKey(address);
     
-    // Vérifier le cache
+    // Verifier le cache
     if (cache.has(cacheKey)) {
       const cached = cache.get(cacheKey);
       if (Date.now() - cached.timestamp < CONFIG.cacheTimeout) {
-        debug('Utilisation des données en cache');
-        return cached.data;
+        debug('Utilisation des donnees en cache');
+        return Promise.resolve(cached.data);
       }
     }
 
-    debug(`Démarrage de l'analyse pour: ${address}`);
+    debug('Demarrage de l analyse pour: ' + address);
 
-    try {
-      // Étape 1: Géocodage
-      ui.showLoading('Étape 1: Localisation de l\'adresse...');
-      debug('Géocodage en cours...');
-      
-      const addressUrl = `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(address)}&limit=5`;
-      const locationData = await fetchWithFallback(addressUrl);
-      
-      if (!locationData?.features?.length) {
-        throw new Error('Adresse non trouvée. Essayez avec le code postal ou le nom de la ville.');
+    // Etape 1: Geocodage
+    ui.showLoading('Etape 1: Localisation de l adresse...');
+    debug('Geocodage en cours...');
+    
+    const addressUrl = 'https://api-adresse.data.gouv.fr/search/?q=' + encodeURIComponent(address) + '&limit=5';
+    
+    return fetchWithFallback(addressUrl).then(function(locationData) {
+      if (!locationData || !locationData.features || !locationData.features.length) {
+        throw new Error('Adresse non trouvee. Essayez avec le code postal ou le nom de la ville.');
       }
 
       const location = locationData.features[0];
       const cityCode = location.properties.citycode;
       const cityName = location.properties.city;
       
-      debug(`Adresse trouvée: ${cityName} (${cityCode})`);
+      debug('Adresse trouvee: ' + cityName + ' (' + cityCode + ')');
 
-      // Étape 2: Récupération des données de qualité
-      ui.showLoading('Étape 2: Récupération des analyses d\'eau...');
+      // Etape 2: Recuperation des donnees de qualite
+      ui.showLoading('Etape 2: Recuperation des analyses d eau...');
       
       const dateLimit = new Date();
       dateLimit.setFullYear(dateLimit.getFullYear() - CONFIG.dateRangeYears);
       const dateLimitStr = dateLimit.toISOString().split('T')[0];
 
-      const waterUrl = `https://hubeau.eaufrance.fr/api/v1/qualite_eau_potable/resultats_dis?code_commune=${cityCode}&date_min_prelevement=${dateLimitStr}&size=200&format=json&sort=desc`;
+      const waterUrl = 'https://hubeau.eaufrance.fr/api/v1/qualite_eau_potable/resultats_dis?code_commune=' + cityCode + '&date_min_prelevement=' + dateLimitStr + '&size=200&format=json&sort=desc';
       
-      debug('Récupération des données qualité...');
-      const qualityData = await fetchWithFallback(waterUrl);
+      debug('Recuperation des donnees qualite...');
+      return fetchWithFallback(waterUrl).then(function(qualityData) {
+        ui.showLoading('Etape 3: Analyse des donnees...');
 
-      ui.showLoading('Étape 3: Analyse des données...');
+        const result = {
+          location: location,
+          qualityData: qualityData,
+          timestamp: Date.now()
+        };
 
-      const result = {
-        location,
-        qualityData,
-        timestamp: Date.now()
-      };
+        // Mise en cache
+        cache.set(cacheKey, {
+          data: result,
+          timestamp: Date.now()
+        });
 
-      // Mise en cache
-      cache.set(cacheKey, {
-        data: result,
-        timestamp: Date.now()
+        debug('Analyse terminee avec succes');
+        return result;
       });
-
-      debug('Analyse terminée avec succès');
-      return result;
-
-    } catch (error) {
-      debug(`Erreur lors de l'analyse: ${error.message}`, 'error');
+    }).catch(function(error) {
+      debug('Erreur lors de l analyse: ' + error.message, 'error');
       throw error;
-    }
+    });
   }
 
-  // Génération du HTML des résultats
+  // Generation du HTML des resultats
   function generateResultsHtml(location, qualityResponse) {
     const props = location.properties;
     let html = '';
 
-    // Informations sur l'adresse
-    html += `
-      <div class="water-result water-result--location">
-        <h3 class="water-result__title">📍 Adresse analysée</h3>
-        <div class="water-result__content">
-          <p><strong>${utils.sanitizeHtml(props.label)}</strong></p>
-          <p>🏘️ ${utils.sanitizeHtml(props.city)} (${props.postcode || 'N/A'})</p>
-          <p>🆔 Code INSEE: ${props.citycode}</p>
-          ${props.context ? `<p>📍 ${utils.sanitizeHtml(props.context)}</p>` : ''}
-        </div>
-      </div>
-    `;
+    // Informations sur l adresse
+    html += '<div class="water-result water-result--location">';
+    html += '<h3 class="water-result__title">📍 Adresse analysee</h3>';
+    html += '<div class="water-result__content">';
+    html += '<p><strong>' + utils.sanitizeHtml(props.label) + '</strong></p>';
+    html += '<p>🏘️ ' + utils.sanitizeHtml(props.city) + ' (' + (props.postcode || 'N/A') + ')</p>';
+    html += '<p>🆔 Code INSEE: ' + props.citycode + '</p>';
+    if (props.context) {
+      html += '<p>📍 ' + utils.sanitizeHtml(props.context) + '</p>';
+    }
+    html += '</div></div>';
 
-    if (qualityResponse?.data?.length > 0) {
+    if (qualityResponse && qualityResponse.data && qualityResponse.data.length > 0) {
       const analyses = qualityResponse.data;
       const latest = analyses[0];
       const lastDate = utils.formatDate(latest.date_prelevement);
 
-      // Informations générales
-      html += `
-        <div class="water-result water-result--quality">
-          <h3 class="water-result__title">📊 Rapport Qualité - ${utils.sanitizeHtml(props.city)}</h3>
-          <div class="water-result__content">
-            <p><strong>Dernière analyse:</strong> ${lastDate}</p>
-            <p><strong>Total analyses:</strong> ${analyses.length} sur ${CONFIG.dateRangeYears} ans</p>
-            ${latest.nom_distributeur ? `<p><strong>Distributeur:</strong> ${utils.sanitizeHtml(latest.nom_distributeur)}</p>` : ''}
-            ${latest.nom_installation ? `<p><strong>Installation:</strong> ${utils.sanitizeHtml(latest.nom_installation)}</p>` : ''}
-          </div>
-        </div>
-      `;
+      // Informations generales
+      html += '<div class="water-result water-result--quality">';
+      html += '<h3 class="water-result__title">📊 Rapport Qualite - ' + utils.sanitizeHtml(props.city) + '</h3>';
+      html += '<div class="water-result__content">';
+      html += '<p><strong>Derniere analyse:</strong> ' + lastDate + '</p>';
+      html += '<p><strong>Total analyses:</strong> ' + analyses.length + ' sur ' + CONFIG.dateRangeYears + ' ans</p>';
+      if (latest.nom_distributeur) {
+        html += '<p><strong>Distributeur:</strong> ' + utils.sanitizeHtml(latest.nom_distributeur) + '</p>';
+      }
+      if (latest.nom_installation) {
+        html += '<p><strong>Installation:</strong> ' + utils.sanitizeHtml(latest.nom_installation) + '</p>';
+      }
+      html += '</div></div>';
 
-      // Analyse de conformité
-      const bactConform = analyses.filter(d => d.conformite_limites_bact_prelevement === 'C').length;
-      const bactTotal = analyses.filter(d => d.conformite_limites_bact_prelevement).length;
+      // Analyse de conformite
+      const bactConform = analyses.filter(function(d) { return d.conformite_limites_bact_prelevement === 'C'; }).length;
+      const bactTotal = analyses.filter(function(d) { return d.conformite_limites_bact_prelevement; }).length;
       
-      const physConform = analyses.filter(d => d.conformite_limites_pc_prelevement === 'C').length;
-      const physTotal = analyses.filter(d => d.conformite_limites_pc_prelevement).length;
+      const physConform = analyses.filter(function(d) { return d.conformite_limites_pc_prelevement === 'C'; }).length;
+      const physTotal = analyses.filter(function(d) { return d.conformite_limites_pc_prelevement; }).length;
 
       if (bactTotal > 0 || physTotal > 0) {
-        html += `
-          <div class="water-result water-result--conformity">
-            <h4 class="water-result__title">✅ Conformité Réglementaire</h4>
-            <div class="water-result__content">
-        `;
+        html += '<div class="water-result water-result--conformity">';
+        html += '<h4 class="water-result__title">✅ Conformite Reglementaire</h4>';
+        html += '<div class="water-result__content">';
 
         if (bactTotal > 0) {
           const bactPercent = (bactConform / bactTotal) * 100;
-          html += `<p>🦠 Qualité bactériologique: <strong>${bactPercent.toFixed(1)}%</strong> conforme (${bactConform}/${bactTotal} analyses)</p>`;
+          html += '<p>🦠 Qualite bacteriologique: <strong>' + bactPercent.toFixed(1) + '%</strong> conforme (' + bactConform + '/' + bactTotal + ' analyses)</p>';
         }
 
         if (physTotal > 0) {
           const physPercent = (physConform / physTotal) * 100;
-          html += `<p>⚗️ Paramètres physico-chimiques: <strong>${physPercent.toFixed(1)}%</strong> conforme (${physConform}/${physTotal} analyses)</p>`;
+          html += '<p>⚗️ Parametres physico-chimiques: <strong>' + physPercent.toFixed(1) + '%</strong> conforme (' + physConform + '/' + physTotal + ' analyses)</p>';
         }
 
-        html += `
-            </div>
-          </div>
-        `;
+        html += '</div></div>';
       }
 
       // Recommandations
-      html += `
-        <div class="water-result water-result--recommendations">
-          <h4 class="water-result__title">💡 Recommandations</h4>
-          <div class="water-result__content">
-            <p>• 🔬 Analyses conformes aux normes françaises en vigueur</p>
-            <p>• 📞 En cas de doute, contactez votre distributeur d'eau</p>
-            <p>• 💧 Consommez 1,5 à 2L d'eau par jour selon vos besoins</p>
-            <p>• 🌡️ Conservez l'eau du robinet au frais et consommez-la rapidement</p>
-          </div>
-        </div>
-      `;
+      html += '<div class="water-result water-result--recommendations">';
+      html += '<h4 class="water-result__title">💡 Recommandations</h4>';
+      html += '<div class="water-result__content">';
+      html += '<p>• 🔬 Analyses conformes aux normes francaises en vigueur</p>';
+      html += '<p>• 📞 En cas de doute, contactez votre distributeur d eau</p>';
+      html += '<p>• 💧 Consommez 1,5 a 2L d eau par jour selon vos besoins</p>';
+      html += '<p>• 🌡️ Conservez l eau du robinet au frais et consommez-la rapidement</p>';
+      html += '</div></div>';
 
     } else {
-      html += `
-        <div class="water-result water-result--warning">
-          <h4 class="water-result__title">⚠️ Aucune analyse récente disponible</h4>
-          <div class="water-result__content">
-            <p>Aucune donnée d'analyse trouvée pour <strong>${utils.sanitizeHtml(props.city)}</strong> sur les ${CONFIG.dateRangeYears} dernières années.</p>
-            <p>Cette commune peut être desservie par un réseau intercommunal ou les données peuvent ne pas être encore disponibles dans la base nationale.</p>
-            <p>💡 Contactez votre mairie ou votre distributeur d'eau pour plus d'informations.</p>
-          </div>
-        </div>
-      `;
+      html += '<div class="water-result water-result--warning">';
+      html += '<h4 class="water-result__title">⚠️ Aucune analyse recente disponible</h4>';
+      html += '<div class="water-result__content">';
+      html += '<p>Aucune donnee d analyse trouvee pour <strong>' + utils.sanitizeHtml(props.city) + '</strong> sur les ' + CONFIG.dateRangeYears + ' dernieres annees.</p>';
+      html += '<p>Cette commune peut etre desservie par un reseau intercommunal ou les donnees peuvent ne pas etre encore disponibles dans la base nationale.</p>';
+      html += '<p>💡 Contactez votre mairie ou votre distributeur d eau pour plus d informations.</p>';
+      html += '</div></div>';
     }
 
     return html;
   }
 
-  // Affichage d'erreur
+  // Affichage d erreur
   function showError(message) {
-    const html = `
-      <div class="water-result water-result--error">
-        <h4 class="water-result__title">❌ Erreur</h4>
-        <div class="water-result__content">
-          <p>${utils.sanitizeHtml(message)}</p>
-          <p>💡 <strong>Suggestions :</strong></p>
-          <p>• Essayez avec un code postal (ex: 01000)</p>
-          <p>• Vérifiez l'orthographe de votre adresse</p>
-          <p>• Vérifiez votre connexion internet</p>
-        </div>
-      </div>
-    `;
+    const html = '<div class="water-result water-result--error">' +
+      '<h4 class="water-result__title">❌ Erreur</h4>' +
+      '<div class="water-result__content">' +
+      '<p>' + utils.sanitizeHtml(message) + '</p>' +
+      '<p>💡 <strong>Suggestions :</strong></p>' +
+      '<p>• Essayez avec un code postal (ex: 01000)</p>' +
+      '<p>• Verifiez l orthographe de votre adresse</p>' +
+      '<p>• Verifiez votre connexion internet</p>' +
+      '</div></div>';
     ui.showResults(html);
   }
 
   // Gestionnaire principal du formulaire
-  async function handleFormSubmit(event) {
+  function handleFormSubmit(event) {
     event.preventDefault();
     
     const input = document.querySelector(selectors.input);
-    const address = input?.value?.trim();
+    const address = input ? input.value.trim() : '';
     
     if (!address) {
       showError('Veuillez saisir une adresse');
@@ -840,16 +832,15 @@
 
     ui.toggleButton(true, 'Analyse...');
 
-    try {
-      const { location, qualityData } = await analyzeWater(address);
-      const html = generateResultsHtml(location, qualityData);
+    analyzeWater(address).then(function(result) {
+      const html = generateResultsHtml(result.location, result.qualityData);
       ui.showResults(html);
-    } catch (error) {
+    }).catch(function(error) {
       showError(error.message);
-    } finally {
+    }).finally(function() {
       ui.hideLoading();
       ui.toggleButton(false, 'Analyser');
-    }
+    });
   }
 
   // Gestionnaire des exemples
@@ -863,7 +854,7 @@
       
       // Animation de feedback
       event.target.style.transform = 'scale(0.95)';
-      setTimeout(() => {
+      setTimeout(function() {
         event.target.style.transform = '';
       }, 150);
     }
@@ -871,7 +862,7 @@
 
   // Initialisation
   function init() {
-    debug('Initialisation de l\'analyseur d\'eau');
+    debug('Initialisation de l analyseur d eau');
 
     // Gestionnaire du formulaire
     const form = document.querySelector(selectors.form);
@@ -881,14 +872,14 @@
 
     // Gestionnaire des exemples
     const examples = document.querySelectorAll(selectors.examples);
-    examples.forEach(example => {
-      example.addEventListener('click', handleExampleClick);
-    });
+    for (let i = 0; i < examples.length; i++) {
+      examples[i].addEventListener('click', handleExampleClick);
+    }
 
-    // Gestionnaire Enter sur l'input
+    // Gestionnaire Enter sur l input
     const input = document.querySelector(selectors.input);
     if (input) {
-      input.addEventListener('keypress', (e) => {
+      input.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
           e.preventDefault();
           handleFormSubmit(e);
@@ -896,10 +887,10 @@
       });
     }
 
-    debug('Analyseur initialisé et prêt');
+    debug('Analyseur initialise et pret');
   }
 
-  // Démarrage quand le DOM est prêt
+  // Demarrage quand le DOM est pret
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
@@ -908,3 +899,59 @@
 
 })();
 </script>
+
+{% schema %}
+{
+  "name": "Analyseur Eau Potable",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Configuration generale"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Titre principal",
+      "default": "Analyseur Qualite Eau Potable",
+      "info": "Le titre affiche en haut de la section"
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": "Sous-titre",
+      "default": "Decouvrez la qualite de l eau a votre adresse",
+      "info": "Description affichee sous le titre"
+    },
+    {
+      "type": "text",
+      "id": "placeholder",
+      "label": "Placeholder du champ adresse",
+      "default": "01000 Bourg-en-Bresse",
+      "info": "Texte d exemple dans le champ de saisie"
+    },
+    {
+      "type": "text",
+      "id": "examples",
+      "label": "Exemples d adresses",
+      "default": "01000,Gex,Bourg-en-Bresse",
+      "info": "Liste d exemples separes par des virgules"
+    },
+    {
+      "type": "header",
+      "content": "Options avancees"
+    },
+    {
+      "type": "checkbox",
+      "id": "debug_mode",
+      "label": "Mode debug",
+      "default": false,
+      "info": "Affiche les informations de debug (pour le developpement)"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Analyseur Eau Potable"
+    }
+  ]
+}
+{% endschema %}
