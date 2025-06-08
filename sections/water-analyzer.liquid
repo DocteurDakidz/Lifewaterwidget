@@ -1,16 +1,12 @@
-<!-- Analyseur Eau Potable - Version Complète avec Personnalisation -->
+<!-- Analyseur Eau Potable - Version avec Formulaire Obligatoire -->
 <div class="water-analyzer" data-section-id="{{ section.id }}" style="
-  --header-background: {{ section.settings.header_background | default: '#4facfe' }};
-  --header-text-color: {{ section.settings.header_text_color | default: '#ffffff' }};
-  --content-background: {{ section.settings.content_background | default: '#ffffff' }};
-  --content-text-color: {{ section.settings.content_text_color | default: '#333333' }};
-  --search-background: {{ section.settings.search_background | default: '#f093fb' }};
-  --search-text-color: {{ section.settings.search_text_color | default: '#ffffff' }};
-  --primary-color: {{ section.settings.primary_color | default: '#3b82f6' }};
-  --secondary-color: {{ section.settings.secondary_color | default: '#64748b' }};
-  --success-color: {{ section.settings.success_color | default: '#10b981' }};
-  --warning-color: {{ section.settings.warning_color | default: '#f59e0b' }};
-  --error-color: {{ section.settings.error_color | default: '#ef4444' }};
+  --header-bg: {{ section.settings.header_background | default: '#4facfe' }};
+  --header-text: {{ section.settings.header_text_color | default: '#ffffff' }};
+  --content-bg: {{ section.settings.content_background | default: '#ffffff' }};
+  --search-bg: {{ section.settings.search_background | default: '#f093fb' }};
+  --button-bg: {{ section.settings.button_background | default: '#ff6b6b' }};
+  --accent-color: {{ section.settings.accent_color | default: '#667eea' }};
+  --text-color: {{ section.settings.text_color | default: '#333333' }};
   --border-radius: {{ section.settings.border_radius | default: 20 }}px;
   --section-padding: {{ section.settings.section_padding | default: 2 }}rem;
 ">
@@ -18,197 +14,273 @@
   <header class="water-analyzer__header">
     <h2 class="water-analyzer__title">
       <span class="water-analyzer__icon">{{ section.settings.header_icon | default: '🌊' }}</span>
-      {{ section.settings.title | default: 'Analyseur Qualite Eau Potable' }}
+      {{ section.settings.title | default: 'Analyseur Qualité Eau Potable' }}
     </h2>
     <p class="water-analyzer__subtitle">
-      {{ section.settings.subtitle | default: 'Decouvrez la qualite de l eau a votre adresse' }}
+      {{ section.settings.subtitle | default: 'Découvrez la qualité de l eau à votre adresse' }}
     </p>
   </header>
 
   <!-- Main Content -->
   <div class="water-analyzer__content">
     
-    <!-- Search Section -->
-    <section class="water-analyzer__search">
-      <h3 class="water-analyzer__search-title">
-        <span class="water-analyzer__icon">{{ section.settings.search_icon | default: '🏠' }}</span>
-        {{ section.settings.search_title | default: 'Analysez votre eau' }}
-      </h3>
-      <p class="water-analyzer__search-description">
-        {{ section.settings.search_description | default: 'Saisissez votre adresse pour obtenir un rapport de qualite detaille' }}
-      </p>
-      
-      <!-- Map Toggle -->
-      {% if section.settings.enable_map %}
-      <div class="water-analyzer__map-toggle">
-        <button type="button" class="water-analyzer__map-btn" data-map-toggle>
-          <span class="water-analyzer__map-icon">🗺️</span>
-          <span class="water-analyzer__map-text">Utiliser la carte</span>
-        </button>
-      </div>
-      {% endif %}
+    <!-- Formulaire Shopify Obligatoire -->
+    <section class="water-analyzer__form-section" data-form-section>
+      {% form 'contact', class: 'water-analyzer__contact-form' %}
+        
+        <div class="water-analyzer__search">
+          <h3 class="water-analyzer__search-title">
+            <span class="water-analyzer__icon">{{ section.settings.search_icon | default: '🏠' }}</span>
+            {{ section.settings.search_title | default: 'Analysez votre eau' }}
+          </h3>
+          <p class="water-analyzer__search-description">
+            {{ section.settings.search_description | default: 'Remplissez le formulaire ci-dessous pour obtenir votre analyse personnalisée' }}
+          </p>
 
-      <!-- Interactive Map -->
-      {% if section.settings.enable_map %}
-      <div class="water-analyzer__map-container" data-map-container style="display: none;">
-        <div class="water-analyzer__map-header">
-          <h4>🗺️ Cliquez sur la carte pour selectionner votre adresse</h4>
-          <button type="button" class="water-analyzer__map-close" data-map-close>✕</button>
-        </div>
-        <div id="water-map-{{ section.id }}" class="water-analyzer__map" data-map></div>
-        <div class="water-analyzer__map-info" data-map-info style="display: none;">
-          <p><strong>Adresse selectionnee:</strong> <span data-selected-address></span></p>
-          <button type="button" class="water-analyzer__map-confirm" data-map-confirm>
-            Analyser cette adresse
-          </button>
-        </div>
-      </div>
-      {% endif %}
-      
-      <form class="water-analyzer__form" data-water-form>
-        <div class="water-analyzer__input-group">
-          <input 
-            type="text" 
-            id="water-input-{{ section.id }}" 
-            class="water-analyzer__input"
-            placeholder="{{ section.settings.placeholder | default: '01000 Bourg-en-Bresse' }}"
-            autocomplete="address-line1"
-            required
-            aria-label="Adresse a analyser"
-          >
-          <button 
-            type="submit"
-            class="water-analyzer__button"
-            data-water-button
-            aria-label="Lancer l analyse"
-          >
-            <span class="water-analyzer__button-icon">{{ section.settings.button_icon | default: '🔍' }}</span>
-            <span class="water-analyzer__button-text">{{ section.settings.button_text | default: 'Analyser' }}</span>
-          </button>
-        </div>
+          <!-- Champs du formulaire -->
+          <div class="water-analyzer__form-fields">
+            
+            <!-- Email (obligatoire) -->
+            <div class="water-analyzer__field-group">
+              <label for="contact_email" class="water-analyzer__label">
+                📧 Votre email *
+              </label>
+              <input 
+                type="email" 
+                id="contact_email"
+                name="contact[email]"
+                class="water-analyzer__input"
+                placeholder="votre@email.com"
+                required
+                value="{{ form.email }}"
+              >
+              {% if form.errors contains 'email' %}
+                <span class="water-analyzer__error">{{ form.errors.translated_fields['email'] | capitalize }} {{ form.errors.messages['email'] }}</span>
+              {% endif %}
+            </div>
 
-        <!-- Examples -->
-        {% if section.settings.show_examples %}
-        <div class="water-analyzer__examples">
-          <span class="water-analyzer__examples-label">💡 Exemples :</span>
-          {% assign examples = section.settings.examples | default: '01000,Gex,Bourg-en-Bresse' | split: ',' %}
-          {% for example in examples %}
+            <!-- Adresse (obligatoire) -->
+            <div class="water-analyzer__field-group">
+              <label for="contact_address" class="water-analyzer__label">
+                🏠 Votre adresse postale *
+              </label>
+              <input 
+                type="text" 
+                id="contact_address"
+                name="contact[address]"
+                class="water-analyzer__input"
+                placeholder="{{ section.settings.placeholder | default: '01000 Bourg-en-Bresse' }}"
+                required
+                value="{{ form.address }}"
+              >
+              {% if form.errors contains 'address' %}
+                <span class="water-analyzer__error">{{ form.errors.translated_fields['address'] | capitalize }} {{ form.errors.messages['address'] }}</span>
+              {% endif %}
+            </div>
+
+            <!-- Nom (optionnel) -->
+            {% if section.settings.collect_name %}
+            <div class="water-analyzer__field-group">
+              <label for="contact_name" class="water-analyzer__label">
+                👤 Votre nom
+              </label>
+              <input 
+                type="text" 
+                id="contact_name"
+                name="contact[name]"
+                class="water-analyzer__input"
+                placeholder="Jean Dupont"
+                value="{{ form.name }}"
+              >
+            </div>
+            {% endif %}
+
+            <!-- Consentement 1: Analyse approfondie -->
+            <div class="water-analyzer__field-group water-analyzer__consent">
+              <label class="water-analyzer__checkbox-label">
+                <input 
+                  type="checkbox" 
+                  name="contact[advanced_analysis]"
+                  value="true"
+                  required
+                  class="water-analyzer__checkbox"
+                  id="advanced_analysis"
+                >
+                <span class="water-analyzer__checkmark"></span>
+                <span class="water-analyzer__consent-text">
+                  Je souhaite être contacté pour obtenir une <strong>analyse approfondie gratuite</strong> de mon eau *
+                </span>
+              </label>
+            </div>
+
+            <!-- Consentement 2: CGV -->
+            <div class="water-analyzer__field-group water-analyzer__consent">
+              <label class="water-analyzer__checkbox-label">
+                <input 
+                  type="checkbox" 
+                  name="contact[terms_accepted]"
+                  value="true"
+                  required
+                  class="water-analyzer__checkbox"
+                  id="terms_accepted"
+                >
+                <span class="water-analyzer__checkmark"></span>
+                <span class="water-analyzer__consent-text">
+                  J'accepte les <a href="/pages/conditions-generales" target="_blank" style="color: var(--accent-color); text-decoration: underline;">conditions générales d'utilisation</a> de l'analyse *
+                </span>
+              </label>
+            </div>
+
+          </div>
+
+          <!-- Bouton de soumission -->
+          <div class="water-analyzer__submit-section">
             <button 
-              type="button" 
-              class="water-analyzer__example"
-              data-example="{{ example | strip }}"
+              type="submit"
+              class="water-analyzer__submit-button"
+              id="form-submit-btn"
             >
-              {{ example | strip }}
+              <span class="water-analyzer__button-icon">{{ section.settings.button_icon | default: '🔍' }}</span>
+              <span class="water-analyzer__button-text">{{ section.settings.button_text | default: 'Lancer l analyse' }}</span>
             </button>
-          {% endfor %}
-        </div>
-        {% endif %}
-      </form>
+          </div>
 
-      <!-- Email Collection -->
-      {% if section.settings.enable_email %}
-      <div class="water-analyzer__email-section">
-        <h4 class="water-analyzer__email-title">📧 Recevoir le rapport par email (optionnel)</h4>
-        <div class="water-analyzer__email-group">
-          <input 
-            type="email" 
-            id="water-email-{{ section.id }}" 
-            class="water-analyzer__email-input"
-            placeholder="votre@email.com"
-            aria-label="Email pour recevoir le rapport"
-          >
-          <span class="water-analyzer__email-note">Nous respectons votre vie privée</span>
+          <!-- Exemples d'adresses -->
+          {% if section.settings.show_examples %}
+          <div class="water-analyzer__examples">
+            <span class="water-analyzer__examples-label">💡 Exemples :</span>
+            {% assign examples = section.settings.examples | default: '01000,Gex,Bourg-en-Bresse' | split: ',' %}
+            {% for example in examples %}
+              <button 
+                type="button" 
+                class="water-analyzer__example"
+                data-example="{{ example | strip }}"
+              >
+                {{ example | strip }}
+              </button>
+            {% endfor %}
+          </div>
+          {% endif %}
+
         </div>
-      </div>
+
+        <!-- Champs cachés pour Shopify -->
+        <input type="hidden" name="contact[tags]" value="water-analysis,{{ section.settings.contact_tags | default: 'lead' }}">
+        <input type="hidden" name="contact[subject]" value="Demande d'analyse eau - {{ section.settings.title }}">
+        
+      {% endform %}
+
+      <!-- Messages d'erreur/succès du formulaire -->
+      {% if form.posted_successfully? %}
+        <div class="water-analyzer__form-success" style="display: none;" data-form-success>
+          <div class="water-analyzer__success-content">
+            <h3>✅ Formulaire envoyé avec succès !</h3>
+            <p>Nous avons bien reçu votre demande. Lancement de l'analyse en cours...</p>
+          </div>
+        </div>
       {% endif %}
+
+      {% if form.errors %}
+        <div class="water-analyzer__form-errors">
+          <h4>❌ Erreurs dans le formulaire :</h4>
+          <ul>
+            {% for field in form.errors %}
+              <li>{{ field | first | capitalize }} : {{ field | last }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+
     </section>
 
-    <!-- Debug Info (hidden by default) -->
-    {% if section.settings.debug_mode %}
-    <div class="water-analyzer__debug" data-debug-info style="display: none;">
-      <strong>Debug :</strong> 
-      <span data-debug-text>En attente...</span>
-    </div>
-    {% endif %}
-
-    <!-- Enhanced Loading State with Progress Bar -->
-    <div class="water-analyzer__loading" data-loading style="display: none;">
-      <div class="water-analyzer__loading-header">
-        <h4 class="water-analyzer__loading-title">{{ section.settings.loading_icon | default: '🔍' }} Analyse en cours...</h4>
-        <div class="water-analyzer__loading-percentage" data-loading-percentage>0%</div>
-      </div>
+    <!-- Section d'analyse (cachée initialement) -->
+    <section class="water-analyzer__analysis-section" data-analysis-section style="display: none;">
       
-      <!-- Main Progress Bar -->
-      <div class="water-analyzer__progress-container">
+      <!-- Barre de progression avancée -->
+      <div class="water-analyzer__progress-container" data-progress-container style="display: none;">
+        <div class="water-analyzer__progress-header">
+          <h3>🔬 Analyse en cours de votre eau</h3>
+          <p>Veuillez patienter pendant que nous analysons les données de qualité...</p>
+        </div>
+        
         <div class="water-analyzer__progress-bar">
           <div class="water-analyzer__progress-fill" data-progress-fill></div>
           <div class="water-analyzer__progress-shimmer"></div>
         </div>
+        
+        <div class="water-analyzer__progress-steps">
+          <div class="water-analyzer__step" data-step="1">
+            <div class="water-analyzer__step-circle">
+              <span class="water-analyzer__step-number">1</span>
+              <span class="water-analyzer__step-check">✓</span>
+            </div>
+            <div class="water-analyzer__step-content">
+              <h4>Géolocalisation</h4>
+              <p>Localisation de votre adresse</p>
+            </div>
+          </div>
+          
+          <div class="water-analyzer__step" data-step="2">
+            <div class="water-analyzer__step-circle">
+              <span class="water-analyzer__step-number">2</span>
+              <span class="water-analyzer__step-check">✓</span>
+            </div>
+            <div class="water-analyzer__step-content">
+              <h4>Récupération données</h4>
+              <p>Collecte des analyses officielles</p>
+            </div>
+          </div>
+          
+          <div class="water-analyzer__step" data-step="3">
+            <div class="water-analyzer__step-circle">
+              <span class="water-analyzer__step-number">3</span>
+              <span class="water-analyzer__step-check">✓</span>
+            </div>
+            <div class="water-analyzer__step-content">
+              <h4>Calcul du score</h4>
+              <p>Analyse et scoring qualité</p>
+            </div>
+          </div>
+          
+          <div class="water-analyzer__step" data-step="4">
+            <div class="water-analyzer__step-circle">
+              <span class="water-analyzer__step-number">4</span>
+              <span class="water-analyzer__step-check">✓</span>
+            </div>
+            <div class="water-analyzer__step-content">
+              <h4>Recommandations</h4>
+              <p>Génération du rapport final</p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- Detailed Steps -->
-      <div class="water-analyzer__steps">
-        <div class="water-analyzer__step" data-step="geocoding">
-          <div class="water-analyzer__step-icon">📍</div>
-          <div class="water-analyzer__step-content">
-            <div class="water-analyzer__step-title">Localisation de l'adresse</div>
-            <div class="water-analyzer__step-status" data-step-status="geocoding">En attente...</div>
-          </div>
-          <div class="water-analyzer__step-indicator" data-step-indicator="geocoding"></div>
-        </div>
-
-        <div class="water-analyzer__step" data-step="quality">
-          <div class="water-analyzer__step-icon">🧪</div>
-          <div class="water-analyzer__step-content">
-            <div class="water-analyzer__step-title">Récupération des analyses</div>
-            <div class="water-analyzer__step-status" data-step-status="quality">En attente...</div>
-          </div>
-          <div class="water-analyzer__step-indicator" data-step-indicator="quality"></div>
-        </div>
-
-        <div class="water-analyzer__step" data-step="scoring">
-          <div class="water-analyzer__step-icon">🎯</div>
-          <div class="water-analyzer__step-content">
-            <div class="water-analyzer__step-title">Calcul du score de qualité</div>
-            <div class="water-analyzer__step-status" data-step-status="scoring">En attente...</div>
-          </div>
-          <div class="water-analyzer__step-indicator" data-step-indicator="scoring"></div>
-        </div>
-
-        <div class="water-analyzer__step" data-step="email" style="display: none;">
-          <div class="water-analyzer__step-icon">📧</div>
-          <div class="water-analyzer__step-content">
-            <div class="water-analyzer__step-title">Envoi du rapport par email</div>
-            <div class="water-analyzer__step-status" data-step-status="email">En attente...</div>
-          </div>
-          <div class="water-analyzer__step-indicator" data-step-indicator="email"></div>
-        </div>
+      <!-- Résultats -->
+      <div class="water-analyzer__results" data-results style="display: none;">
+        <!-- Résultats générés par JavaScript -->
       </div>
-    </div>
 
-    <!-- Results -->
-    <div class="water-analyzer__results" data-results style="display: none;" role="region" aria-live="polite">
-      <!-- Results will be populated by JavaScript -->
-    </div>
+    </section>
+
   </div>
 </div>
 
 <style>
   .water-analyzer {
     font-family: var(--font-body-family, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif);
-    background: var(--content-background);
+    background: var(--content-bg);
     border-radius: var(--border-radius);
     overflow: hidden;
     box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
     margin: var(--section-padding) 0;
-    color: var(--content-text-color);
+    color: var(--text-color);
     max-width: 100%;
     position: relative;
   }
 
   .water-analyzer__header {
-    background: var(--header-background);
-    color: var(--header-text-color);
+    background: var(--header-bg);
+    color: var(--header-text);
     padding: var(--section-padding) calc(var(--section-padding) * 0.75);
     text-align: center;
   }
@@ -232,16 +304,17 @@
   }
 
   .water-analyzer__content {
-    background: var(--content-background);
+    background: var(--content-bg);
     padding: var(--section-padding) calc(var(--section-padding) * 0.75);
   }
 
+  /* Section de recherche */
   .water-analyzer__search {
-    background: var(--search-background);
-    color: var(--search-text-color);
+    background: var(--search-bg);
     padding: var(--section-padding);
     border-radius: calc(var(--border-radius) * 0.75);
     margin-bottom: var(--section-padding);
+    color: white;
   }
 
   .water-analyzer__search-title {
@@ -255,124 +328,26 @@
     opacity: 0.95;
   }
 
-  /* Map Toggle Button */
-  .water-analyzer__map-toggle {
+  /* Champs de formulaire */
+  .water-analyzer__form-fields {
+    display: grid;
+    gap: 1.25rem;
     margin-bottom: 1.5rem;
-    text-align: center;
   }
 
-  .water-analyzer__map-btn {
-    background: rgba(255, 255, 255, 0.2);
-    color: var(--search-text-color);
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    padding: 0.75rem 1.5rem;
-    border-radius: 25px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
+  .water-analyzer__field-group {
+    display: flex;
+    flex-direction: column;
     gap: 0.5rem;
+  }
+
+  .water-analyzer__label {
     font-weight: 600;
-  }
-
-  .water-analyzer__map-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
-    border-color: rgba(255, 255, 255, 0.5);
-    transform: translateY(-2px);
-  }
-
-  /* Map Container */
-  .water-analyzer__map-container {
-    background: white;
-    border-radius: 15px;
-    margin-bottom: 1.5rem;
-    overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  }
-
-  .water-analyzer__map-header {
-    background: var(--primary-color);
-    color: white;
-    padding: 1rem 1.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .water-analyzer__map-header h4 {
-    margin: 0;
-    font-size: 1rem;
-  }
-
-  .water-analyzer__map-close {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 1.5rem;
-    cursor: pointer;
-    padding: 0;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.2s ease;
-  }
-
-  .water-analyzer__map-close:hover {
-    background: rgba(255, 255, 255, 0.2);
-  }
-
-  .water-analyzer__map {
-    height: 400px;
-    width: 100%;
-    background: #f0f0f0;
-    position: relative;
-  }
-
-  .water-analyzer__map-info {
-    padding: 1rem 1.5rem;
-    background: #f8f9fa;
-    border-top: 1px solid #e9ecef;
-  }
-
-  .water-analyzer__map-info p {
-    margin: 0 0 1rem 0;
-    color: #333;
-  }
-
-  .water-analyzer__map-confirm {
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 25px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.3s ease;
-  }
-
-  .water-analyzer__map-confirm:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-  }
-
-  .water-analyzer__form {
-    width: 100%;
-  }
-
-  .water-analyzer__input-group {
-    display: flex;
-    gap: 0.75rem;
-    align-items: stretch;
-    flex-wrap: wrap;
-    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    opacity: 0.95;
   }
 
   .water-analyzer__input {
-    flex: 1;
-    min-width: 250px;
     padding: 0.875rem 1.25rem;
     border: none;
     border-radius: 25px;
@@ -380,7 +355,7 @@
     background: rgba(255, 255, 255, 0.95);
     outline: none;
     transition: all 0.3s ease;
-    color: #333;
+    font-family: inherit;
   }
 
   .water-analyzer__input:focus {
@@ -388,33 +363,109 @@
     box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
   }
 
-  .water-analyzer__button {
-    padding: 0.875rem 1.5rem;
-    background: var(--primary-color);
+  .water-analyzer__input:invalid {
+    border: 2px solid #ff6b6b;
+  }
+
+  .water-analyzer__error {
+    color: #ff6b6b;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-top: 0.25rem;
+  }
+
+  /* Cases à cocher */
+  .water-analyzer__consent {
+    margin-top: 0.5rem;
+  }
+
+  .water-analyzer__checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+
+  .water-analyzer__checkbox {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+    margin-top: 2px;
+    transition: all 0.3s ease;
+  }
+
+  .water-analyzer__checkbox:checked {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(255, 255, 255, 0.9);
+  }
+
+  .water-analyzer__checkbox:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--search-bg);
+    font-weight: bold;
+    font-size: 14px;
+  }
+
+  .water-analyzer__consent-text {
+    flex: 1;
+  }
+
+  .water-analyzer__consent-text a {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: underline;
+  }
+
+  .water-analyzer__consent-text a:hover {
+    color: white;
+  }
+
+  /* Bouton de soumission */
+  .water-analyzer__submit-section {
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .water-analyzer__submit-button {
+    padding: 1rem 2rem;
+    background: var(--button-bg);
     color: white;
     border: none;
-    border-radius: 25px;
-    font-size: 1rem;
+    border-radius: 30px;
+    font-size: 1.1rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    white-space: nowrap;
+    gap: 0.75rem;
+    min-width: 200px;
+    justify-content: center;
   }
 
-  .water-analyzer__button:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+  .water-analyzer__submit-button:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   }
 
-  .water-analyzer__button:disabled {
+  .water-analyzer__submit-button:disabled {
     opacity: 0.7;
     cursor: not-allowed;
     transform: none;
   }
 
+  /* Exemples */
   .water-analyzer__examples {
     display: flex;
     flex-wrap: wrap;
@@ -422,7 +473,7 @@
     gap: 0.5rem;
     opacity: 0.9;
     font-size: 0.9rem;
-    margin-bottom: 1rem;
+    margin-top: 1rem;
   }
 
   .water-analyzer__examples-label {
@@ -432,7 +483,7 @@
 
   .water-analyzer__example {
     background: rgba(255, 255, 255, 0.2);
-    color: var(--search-text-color);
+    color: white;
     border: none;
     padding: 0.375rem 0.75rem;
     border-radius: 12px;
@@ -446,90 +497,67 @@
     transform: translateY(-1px);
   }
 
-  /* Email Collection Section */
-  .water-analyzer__email-section {
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
+  /* Messages de formulaire */
+  .water-analyzer__form-success {
+    background: linear-gradient(135deg, #a8e6cf 0%, #dcedc1 100%);
+    padding: var(--section-padding);
+    border-radius: calc(var(--border-radius) * 0.75);
+    margin-bottom: var(--section-padding);
+    text-align: center;
+    animation: fadeInUp 0.6s ease-out;
   }
 
-  .water-analyzer__email-title {
+  .water-analyzer__form-success h3 {
     margin: 0 0 1rem 0;
-    font-size: 1.1rem;
-    font-weight: 600;
+    color: #2d5a27;
+    font-size: 1.5rem;
   }
 
-  .water-analyzer__email-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+  .water-analyzer__form-success p {
+    margin: 0.5rem 0;
+    color: #2d5a27;
   }
 
-  .water-analyzer__email-input {
-    padding: 0.75rem 1rem;
-    border: none;
-    border-radius: 20px;
-    font-size: 0.95rem;
-    background: rgba(255, 255, 255, 0.95);
-    outline: none;
-    transition: all 0.3s ease;
-    color: #333;
-  }
-
-  .water-analyzer__email-input:focus {
-    background: white;
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
-  }
-
-  .water-analyzer__email-note {
-    font-size: 0.8rem;
-    opacity: 0.8;
-    font-style: italic;
-  }
-
-  .water-analyzer__debug {
-    background: #e3f2fd;
+  .water-analyzer__form-errors {
+    background: #f8d7da;
+    color: #721c24;
     padding: 1rem;
     border-radius: 8px;
-    margin-bottom: 1.5rem;
-    font-family: 'Courier New', monospace;
-    font-size: 0.8rem;
-    border-left: 4px solid var(--primary-color);
+    margin-bottom: 1rem;
+    border-left: 4px solid #dc3545;
   }
 
-  /* Enhanced Loading Styles */
-  .water-analyzer__loading {
-    text-align: center;
-    padding: 2rem 1rem;
-    background: #f8fafc;
-    border-radius: calc(var(--border-radius) * 0.75);
-    margin: 1rem 0;
+  .water-analyzer__form-errors h4 {
+    margin: 0 0 0.5rem 0;
   }
 
-  .water-analyzer__loading-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-  }
-
-  .water-analyzer__loading-title {
+  .water-analyzer__form-errors ul {
     margin: 0;
-    color: var(--content-text-color);
-    font-size: 1.2rem;
-    font-weight: 600;
+    padding-left: 1.5rem;
   }
 
-  .water-analyzer__loading-percentage {
-    font-size: 1.1rem;
-    font-weight: bold;
-    color: var(--primary-color);
-    min-width: 50px;
-  }
-
-  /* Progress Bar */
+  /* Barre de progression avancée */
   .water-analyzer__progress-container {
+    background: #f8fafc;
+    padding: 2rem;
+    border-radius: calc(var(--border-radius) * 0.75);
     margin-bottom: 2rem;
+  }
+
+  .water-analyzer__progress-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .water-analyzer__progress-header h3 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-color);
+    font-size: 1.3rem;
+  }
+
+  .water-analyzer__progress-header p {
+    margin: 0;
+    color: #666;
   }
 
   .water-analyzer__progress-bar {
@@ -539,15 +567,15 @@
     border-radius: 4px;
     overflow: hidden;
     position: relative;
+    margin-bottom: 2rem;
   }
 
   .water-analyzer__progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+    background: linear-gradient(90deg, var(--accent-color), var(--button-bg));
     border-radius: 4px;
+    transition: width 0.8s ease;
     width: 0%;
-    transition: width 0.5s ease;
-    position: relative;
   }
 
   .water-analyzer__progress-shimmer {
@@ -556,7 +584,7 @@
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
     animation: shimmer 2s infinite;
   }
 
@@ -565,12 +593,10 @@
     100% { left: 100%; }
   }
 
-  /* Steps */
-  .water-analyzer__steps {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    text-align: left;
+  .water-analyzer__progress-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
   }
 
   .water-analyzer__step {
@@ -580,100 +606,90 @@
     padding: 1rem;
     background: white;
     border-radius: 8px;
-    border-left: 4px solid #e2e8f0;
+    border: 2px solid #e2e8f0;
     transition: all 0.3s ease;
   }
 
   .water-analyzer__step.active {
-    border-left-color: var(--primary-color);
+    border-color: var(--accent-color);
     background: #f0f9ff;
   }
 
   .water-analyzer__step.completed {
-    border-left-color: var(--success-color);
+    border-color: #10b981;
     background: #f0fdf4;
   }
 
   .water-analyzer__step.error {
-    border-left-color: var(--error-color);
+    border-color: #ef4444;
     background: #fef2f2;
   }
 
-  .water-analyzer__step-icon {
-    font-size: 1.5rem;
+  .water-analyzer__step-circle {
     width: 40px;
-    text-align: center;
-  }
-
-  .water-analyzer__step-content {
-    flex: 1;
-  }
-
-  .water-analyzer__step-title {
-    font-weight: 600;
-    margin-bottom: 0.25rem;
-    color: var(--content-text-color);
-  }
-
-  .water-analyzer__step-status {
-    font-size: 0.9rem;
-    color: #64748b;
-  }
-
-  .water-analyzer__step-indicator {
-    width: 20px;
-    height: 20px;
+    height: 40px;
     border-radius: 50%;
     background: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #64748b;
     position: relative;
+    flex-shrink: 0;
     transition: all 0.3s ease;
   }
 
-  .water-analyzer__step-indicator.active {
-    background: var(--primary-color);
+  .water-analyzer__step.active .water-analyzer__step-circle {
+    background: var(--accent-color);
+    color: white;
     animation: pulse 2s infinite;
   }
 
-  .water-analyzer__step-indicator.completed {
-    background: var(--success-color);
-  }
-
-  .water-analyzer__step-indicator.completed::after {
-    content: '✓';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+  .water-analyzer__step.completed .water-analyzer__step-circle {
+    background: #10b981;
     color: white;
-    font-size: 12px;
-    font-weight: bold;
   }
 
-  .water-analyzer__step-indicator.error {
-    background: var(--error-color);
-  }
-
-  .water-analyzer__step-indicator.error::after {
-    content: '✕';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+  .water-analyzer__step.error .water-analyzer__step-circle {
+    background: #ef4444;
     color: white;
-    font-size: 12px;
-    font-weight: bold;
+  }
+
+  .water-analyzer__step-check {
+    display: none;
+  }
+
+  .water-analyzer__step.completed .water-analyzer__step-number {
+    display: none;
+  }
+
+  .water-analyzer__step.completed .water-analyzer__step-check {
+    display: block;
+  }
+
+  .water-analyzer__step-content h4 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1rem;
+    color: var(--text-color);
+  }
+
+  .water-analyzer__step-content p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #666;
   }
 
   @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
   }
 
+  /* Résultats (styles existants conservés) */
   .water-analyzer__results {
-    animation: water-fade-in 0.5s ease-out;
+    animation: fadeInUp 0.5s ease-out;
   }
 
-  /* Result Styles */
   .water-result {
     border-radius: calc(var(--border-radius) * 0.6);
     padding: 1.5rem;
@@ -682,65 +698,49 @@
 
   .water-result--location {
     background: #f8f9fa;
-    border-left: 4px solid var(--primary-color);
+    border-left: 4px solid var(--accent-color);
   }
 
   .water-result--score {
-    background: #f8fafc;
-    border-left: 4px solid var(--primary-color);
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%) !important;
     text-align: center;
   }
 
   .water-result--characteristics {
     background: #f1f5f9;
-    border-left: 4px solid var(--secondary-color);
+    border-left: 4px solid #64748b;
   }
 
   .water-result--problems {
     background: #fffbeb;
-    border-left: 4px solid var(--warning-color);
+    border-left: 4px solid #f59e0b;
   }
 
   .water-result--recommendation {
     background: #f0f9ff;
-    border-left: 4px solid var(--primary-color);
+    border-left: 4px solid #3b82f6;
   }
 
   .water-result--info {
     background: #f8fafc;
-    border-left: 4px solid var(--secondary-color);
+    border-left: 4px solid #64748b;
   }
 
   .water-result--email {
     background: #f0fdf4;
-    border-left: 4px solid var(--success-color);
-  }
-
-  .water-result--quality {
-    background: #f8f9fa;
-    border-left: 4px solid var(--success-color);
-  }
-
-  .water-result--conformity {
-    background: #f0fdf4;
-    border-left: 4px solid var(--success-color);
-  }
-
-  .water-result--recommendations {
-    background: #fffbeb;
-    border-left: 4px solid var(--warning-color);
+    border-left: 4px solid #10b981;
   }
 
   .water-result--warning {
-    background: #fffbeb;
-    color: #92400e;
-    border-left: 4px solid var(--warning-color);
+    background: #fff3cd;
+    color: #856404;
+    border-left: 4px solid #ffc107;
   }
 
   .water-result--error {
-    background: #fef2f2;
-    color: #991b1b;
-    border-left: 4px solid var(--error-color);
+    background: #f8d7da;
+    color: #721c24;
+    border-left: 4px solid #dc3545;
   }
 
   .water-result__title {
@@ -753,27 +753,16 @@
     margin: 0.5rem 0;
   }
 
-  .water-result__content p:first-child {
-    margin-top: 0;
-  }
-
-  .water-result__content p:last-child {
-    margin-bottom: 0;
-  }
-
-  /* Score Circle */
-  .score-circle {
-    display: inline-flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    margin: 1rem auto !important;
-  }
-
   /* Animations */
-  @keyframes water-fade-in {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+  @keyframes fadeInUp {
+    from { 
+      opacity: 0; 
+      transform: translateY(30px); 
+    }
+    to { 
+      opacity: 1; 
+      transform: translateY(0); 
+    }
   }
 
   /* Responsive Design */
@@ -795,44 +784,21 @@
       padding: 1.5rem;
     }
 
-    .water-analyzer__input-group {
-      flex-direction: column;
-    }
-
-    .water-analyzer__input {
-      min-width: auto;
-    }
-
     .water-analyzer__examples {
       justify-content: center;
     }
 
-    .water-analyzer__map {
-      height: 300px;
+    .water-analyzer__submit-button {
+      width: 100%;
     }
 
-    .water-analyzer__loading-header {
-      flex-direction: column;
-      gap: 0.5rem;
-      text-align: center;
-    }
-
-    .water-analyzer__steps {
-      gap: 0.75rem;
+    .water-analyzer__progress-steps {
+      grid-template-columns: 1fr;
     }
 
     .water-analyzer__step {
-      padding: 0.75rem;
-    }
-
-    .score-circle {
-      width: 100px !important;
-      height: 100px !important;
-      border-width: 6px !important;
-    }
-    
-    .score-circle div:first-child {
-      font-size: 28px !important;
+      flex-direction: column;
+      text-align: center;
     }
   }
 
@@ -845,26 +811,6 @@
     .water-analyzer__examples-label {
       margin-bottom: 0.5rem;
     }
-
-    .water-analyzer__map-header {
-      flex-direction: column;
-      gap: 0.5rem;
-      text-align: center;
-    }
-
-    .water-analyzer__step {
-      flex-direction: column;
-      text-align: center;
-      gap: 0.5rem;
-    }
-
-    .water-analyzer__step-content {
-      order: 1;
-    }
-
-    .water-analyzer__step-indicator {
-      order: 2;
-    }
   }
 
   /* High contrast mode support */
@@ -873,14 +819,14 @@
       border: 2px solid #000;
     }
 
-    .water-analyzer__button {
+    .water-analyzer__submit-button {
       border: 2px solid #000;
     }
   }
 
   /* Reduced motion support */
   @media (prefers-reduced-motion: reduce) {
-    .water-analyzer__button:hover {
+    .water-analyzer__submit-button:hover {
       transform: none;
     }
 
@@ -892,26 +838,22 @@
       animation: none;
     }
 
-    .water-analyzer__step-indicator.active {
+    .water-analyzer__step.active .water-analyzer__step-circle {
       animation: none;
     }
 
+    .water-analyzer__form-success,
     .water-analyzer__results {
       animation: none;
     }
   }
 </style>
 
-<!-- Leaflet CSS pour la carte -->
-{% if section.settings.enable_map %}
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-{% endif %}
-
 <script>
 (function() {
   'use strict';
   
-  // Configuration avec systeme de fallback CORS ameliore
+  // Configuration avec système de fallback CORS (conservé)
   const CORS_METHODS = [
     {
       name: 'AllOrigins',
@@ -945,72 +887,34 @@
     }
   ];
 
-  // Configuration globale
+  // Configuration (conservée)
   const CONFIG = {
     sectionId: '{{ section.id }}',
-    debugMode: {{ section.settings.debug_mode | default: false }},
-    enableMap: {{ section.settings.enable_map | default: false }},
-    enableEmail: {{ section.settings.enable_email | default: false }},
     maxRetries: 3,
-    cacheTimeout: 300000, // 5 minutes
+    cacheTimeout: 300000,
     dateRangeYears: 2
   };
 
-  // Variables globales pour la carte
-  let map = null;
-  let marker = null;
-  let selectedAddress = null;
-  let userEmail = null;
-
-  // Cache simple pour eviter les requetes repetees
+  // Variables globales
   const cache = new Map();
+  let userEmail = null;
+  let userAddress = null;
 
-  // Variables pour la gestion du progress
-  let currentProgress = 0;
-  let progressSteps = {
-    geocoding: { start: 0, end: 25, duration: 2000 },
-    quality: { start: 25, end: 60, duration: 3000 },
-    scoring: { start: 60, end: 85, duration: 2000 },
-    email: { start: 85, end: 100, duration: 1500 }
-  };
-
-  // Selecteurs DOM
+  // Sélecteurs DOM
   const selectors = {
-    form: '[data-water-form]',
-    input: '#water-input-' + CONFIG.sectionId,
-    emailInput: '#water-email-' + CONFIG.sectionId,
-    button: '[data-water-button]',
-    loading: '[data-loading]',
-    loadingPercentage: '[data-loading-percentage]',
+    formSection: '[data-form-section]',
+    contactForm: '.water-analyzer__contact-form',
+    formSuccess: '[data-form-success]',
+    analysisSection: '[data-analysis-section]',
+    progressContainer: '[data-progress-container]',
     progressFill: '[data-progress-fill]',
     results: '[data-results]',
-    debugInfo: '[data-debug-info]',
-    debugText: '[data-debug-text]',
     examples: '[data-example]',
-    mapToggle: '[data-map-toggle]',
-    mapContainer: '[data-map-container]',
-    mapElement: '[data-map]',
-    mapClose: '[data-map-close]',
-    mapInfo: '[data-map-info]',
-    mapConfirm: '[data-map-confirm]',
-    selectedAddress: '[data-selected-address]'
+    submitBtn: '#form-submit-btn'
   };
 
-  // Utilitaires
+  // Utilitaires (conservés)
   const utils = {
-    debounce: function(func, wait) {
-      let timeout;
-      return function executedFunction() {
-        const args = arguments;
-        const later = function() {
-          clearTimeout(timeout);
-          func.apply(this, args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-      };
-    },
-
     sanitizeHtml: function(str) {
       const div = document.createElement('div');
       div.textContent = str;
@@ -1027,292 +931,75 @@
 
     getCacheKey: function(address) {
       return 'water_analysis_' + address.toLowerCase().replace(/\s+/g, '_');
-    },
-
-    isValidEmail: function(email) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      return emailRegex.test(email);
     }
   };
 
-  // Fonction de debug amelioree
-  function debug(message, type) {
-    type = type || 'info';
-    const timestamp = new Date().toLocaleTimeString('fr-FR');
-    const logMessage = '[' + timestamp + '] 🌊 Water Analyzer: ' + message;
-    
-    console[type](logMessage);
-    
-    if (CONFIG.debugMode) {
-      const debugEl = document.querySelector(selectors.debugInfo);
-      const debugText = document.querySelector(selectors.debugText);
-      if (debugEl && debugText) {
-        debugEl.style.display = 'block';
-        debugText.textContent = timestamp + ' - ' + message;
-      }
-    }
-  }
-
-  // Gestion du progress avancée
+  // Gestion de la progression
   const progressManager = {
-    updateProgress: function(percentage) {
-      currentProgress = Math.min(100, Math.max(0, percentage));
-      
-      const progressFill = document.querySelector(selectors.progressFill);
-      const progressPercentage = document.querySelector(selectors.loadingPercentage);
-      
-      if (progressFill) {
-        progressFill.style.width = currentProgress + '%';
-      }
-      
-      if (progressPercentage) {
-        progressPercentage.textContent = Math.round(currentProgress) + '%';
-      }
-    },
-
-    animateStep: function(stepName, callback) {
-      const step = progressSteps[stepName];
-      if (!step) {
-        if (callback) callback();
-        return;
-      }
-
-      const startTime = Date.now();
-      const startProgress = step.start;
-      const endProgress = step.end;
-      const duration = step.duration;
-
-      const animate = function() {
-        const elapsed = Date.now() - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const currentValue = startProgress + (endProgress - startProgress) * progress;
-        
-        progressManager.updateProgress(currentValue);
-        
-        if (progress < 1) {
-          requestAnimationFrame(animate);
-        } else {
-          if (callback) callback();
-        }
-      };
-
-      requestAnimationFrame(animate);
-    },
-
-    setStepStatus: function(stepName, status, message) {
-      const stepElement = document.querySelector('[data-step="' + stepName + '"]');
-      const statusElement = document.querySelector('[data-step-status="' + stepName + '"]');
-      const indicatorElement = document.querySelector('[data-step-indicator="' + stepName + '"]');
-      
-      if (stepElement) {
-        stepElement.className = 'water-analyzer__step ' + status;
-      }
-      
-      if (statusElement) {
-        statusElement.textContent = message || status;
-      }
-      
-      if (indicatorElement) {
-        indicatorElement.className = 'water-analyzer__step-indicator ' + status;
-      }
-    },
-
-    reset: function() {
-      currentProgress = 0;
-      progressManager.updateProgress(0);
-      
-      // Reset tous les steps
-      ['geocoding', 'quality', 'scoring', 'email'].forEach(function(stepName) {
-        progressManager.setStepStatus(stepName, '', 'En attente...');
-      });
-    }
-  };
-
-  // Gestion de la carte interactive
-  const mapManager = {
-    init: function() {
-      if (!CONFIG.enableMap) return;
-      
-      debug('Initialisation de la carte interactive');
-      
-      // Charger Leaflet si pas deja charge
-      if (typeof L === 'undefined') {
-        const script = document.createElement('script');
-        script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-        script.onload = function() {
-          mapManager.setupMap();
-        };
-        document.head.appendChild(script);
-      } else {
-        mapManager.setupMap();
-      }
-    },
-
-    setupMap: function() {
-      const mapElement = document.querySelector(selectors.mapElement);
-      if (!mapElement) return;
-
-      // Initialiser la carte centree sur la France
-      map = L.map(mapElement.id).setView([46.603354, 1.888334], 6);
-      
-      // Ajouter les tuiles OpenStreetMap
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-      }).addTo(map);
-
-      // Gestionnaire de clic sur la carte
-      map.on('click', mapManager.onMapClick);
-      
-      debug('Carte initialisee avec succes');
-    },
-
-    onMapClick: function(e) {
-      const lat = e.latlng.lat;
-      const lng = e.latlng.lng;
-      
-      debug('Clic sur la carte: ' + lat + ', ' + lng);
-      
-      // Supprimer le marqueur precedent
-      if (marker) {
-        map.removeLayer(marker);
-      }
-      
-      // Ajouter un nouveau marqueur
-      marker = L.marker([lat, lng]).addTo(map);
-      
-      // Geocodage inverse pour obtenir l'adresse
-      mapManager.reverseGeocode(lat, lng);
-    },
-
-    reverseGeocode: function(lat, lng) {
-      const url = 'https://api-adresse.data.gouv.fr/reverse/?lon=' + lng + '&lat=' + lat;
-      
-      fetchWithFallback(url).then(function(data) {
-        if (data && data.features && data.features.length > 0) {
-          const address = data.features[0].properties.label;
-          selectedAddress = address;
-          
-          // Afficher l'adresse selectionnee
-          const addressEl = document.querySelector(selectors.selectedAddress);
-          const mapInfo = document.querySelector(selectors.mapInfo);
-          
-          if (addressEl && mapInfo) {
-            addressEl.textContent = address;
-            mapInfo.style.display = 'block';
-          }
-          
-          debug('Adresse trouvee: ' + address);
-        } else {
-          debug('Aucune adresse trouvee pour ces coordonnees', 'warn');
-        }
-      }).catch(function(error) {
-        debug('Erreur lors du geocodage inverse: ' + error.message, 'error');
-      });
-    },
+    currentStep: 0,
+    steps: [
+      { duration: 2000, progress: 25 },  // Géolocalisation
+      { duration: 3000, progress: 60 },  // Récupération données
+      { duration: 2000, progress: 85 },  // Calcul score
+      { duration: 1500, progress: 100 }  // Recommandations
+    ],
 
     show: function() {
-      const container = document.querySelector(selectors.mapContainer);
+      const container = document.querySelector(selectors.progressContainer);
       if (container) {
         container.style.display = 'block';
-        
-        // Redimensionner la carte apres affichage
-        setTimeout(function() {
-          if (map) {
-            map.invalidateSize();
-          }
-        }, 100);
       }
+      this.currentStep = 0;
+      this.updateProgress(0);
     },
 
     hide: function() {
-      const container = document.querySelector(selectors.mapContainer);
+      const container = document.querySelector(selectors.progressContainer);
       if (container) {
         container.style.display = 'none';
       }
+    },
+
+    setStep: function(stepNumber) {
+      this.currentStep = stepNumber;
       
-      // Reset
-      selectedAddress = null;
-      const mapInfo = document.querySelector(selectors.mapInfo);
-      if (mapInfo) {
-        mapInfo.style.display = 'none';
+      // Mettre à jour les états visuels des étapes
+      const steps = document.querySelectorAll('[data-step]');
+      steps.forEach(function(step, index) {
+        const stepNum = index + 1;
+        step.classList.remove('active', 'completed', 'error');
+        
+        if (stepNum < stepNumber) {
+          step.classList.add('completed');
+        } else if (stepNum === stepNumber) {
+          step.classList.add('active');
+        }
+      });
+
+      // Animer la barre de progression
+      if (stepNumber <= this.steps.length) {
+        const targetProgress = stepNumber === 0 ? 0 : this.steps[stepNumber - 1].progress;
+        this.updateProgress(targetProgress);
       }
     },
 
-    confirmAddress: function() {
-      if (selectedAddress) {
-        const input = document.querySelector(selectors.input);
-        if (input) {
-          input.value = selectedAddress;
-        }
-        mapManager.hide();
-        
-        // Lancer automatiquement l'analyse
-        setTimeout(function() {
-          handleFormSubmit({ preventDefault: function() {} });
-        }, 300);
+    updateProgress: function(percentage) {
+      const fill = document.querySelector(selectors.progressFill);
+      if (fill) {
+        fill.style.width = percentage + '%';
+      }
+    },
+
+    setError: function(stepNumber) {
+      const step = document.querySelector('[data-step="' + stepNumber + '"]');
+      if (step) {
+        step.classList.remove('active', 'completed');
+        step.classList.add('error');
       }
     }
   };
 
-  // Gestion des etats de l interface
-  const ui = {
-    showLoading: function() {
-      const loading = document.querySelector(selectors.loading);
-      const results = document.querySelector(selectors.results);
-      
-      if (results) results.style.display = 'none';
-      if (loading) loading.style.display = 'block';
-      
-      // Afficher l'étape email si nécessaire
-      if (CONFIG.enableEmail && userEmail) {
-        const emailStep = document.querySelector('[data-step="email"]');
-        if (emailStep) {
-          emailStep.style.display = 'flex';
-        }
-      }
-      
-      progressManager.reset();
-    },
-
-    hideLoading: function() {
-      const loading = document.querySelector(selectors.loading);
-      if (loading) loading.style.display = 'none';
-    },
-
-    toggleButton: function(disabled, text) {
-      disabled = disabled || false;
-      const button = document.querySelector(selectors.button);
-      if (!button) return;
-
-      button.disabled = disabled;
-      
-      if (text) {
-        const buttonText = button.querySelector('.water-analyzer__button-text');
-        const buttonIcon = button.querySelector('.water-analyzer__button-icon');
-        
-        if (buttonText) buttonText.textContent = text;
-        if (buttonIcon) buttonIcon.textContent = disabled ? '🔄' : '{{ section.settings.button_icon | default: "🔍" }}';
-      }
-    },
-
-    showResults: function(html) {
-      const results = document.querySelector(selectors.results);
-      if (results) {
-        results.innerHTML = html;
-        results.style.display = 'block';
-        
-        // Scroll fluide vers les resultats
-        setTimeout(function() {
-          results.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'start' 
-          });
-        }, 100);
-      }
-    }
-  };
-
-  // Fonction de fetch avec timeout et retry
+  // Fonction de fetch avec timeout (conservée)
   function fetchWithTimeout(url, options) {
     options = options || {};
     const timeout = options.timeout || 5000;
@@ -1335,18 +1022,16 @@
     });
   }
 
-  // Fonction de fetch avec fallback amelioree
+  // Fonction de fetch avec fallback (conservée)
   function fetchWithFallback(url, methodIndex, retryCount) {
     methodIndex = methodIndex || 0;
     retryCount = retryCount || 0;
     
     if (methodIndex >= CORS_METHODS.length) {
-      throw new Error('Toutes les methodes de connexion ont echoue. Verifiez votre connexion internet.');
+      throw new Error('Toutes les méthodes de connexion ont échoué. Vérifiez votre connexion internet.');
     }
 
     const method = CORS_METHODS[methodIndex];
-    debug('Tentative ' + (methodIndex + 1) + '/' + CORS_METHODS.length + ': ' + method.name + ' (retry: ' + retryCount + ')');
-
     const proxyUrl = method.proxy ? method.proxy + encodeURIComponent(url) : url;
     
     return fetchWithTimeout(proxyUrl, {
@@ -1363,13 +1048,8 @@
       }
       return response.json();
     }).then(function(data) {
-      const parsedData = method.parse(data);
-      debug('Succes avec ' + method.name);
-      return parsedData;
+      return method.parse(data);
     }).catch(function(error) {
-      debug('Methode ' + method.name + ' echouee: ' + error.message, 'warn');
-      
-      // Retry avec la meme methode si pas encore fait
       if (retryCount < CONFIG.maxRetries) {
         return new Promise(function(resolve) {
           setTimeout(resolve, 1000 * (retryCount + 1));
@@ -1378,12 +1058,11 @@
         });
       }
       
-      // Essayer la methode suivante
       return fetchWithFallback(url, methodIndex + 1, 0);
     });
   }
 
-  // Fonction de calcul de score
+  // Fonction de calcul de score (conservée intégralement)
   function calculateWaterScore(qualityData) {
     if (!qualityData || !qualityData.data || !qualityData.data.length) {
       return null;
@@ -1595,7 +1274,7 @@
     };
   }
 
-  // Fonction principale d analyse
+  // Fonction d'analyse (conservée avec progression)
   function analyzeWater(address) {
     if (!address || !address.trim()) {
       throw new Error('Veuillez saisir une adresse valide');
@@ -1603,107 +1282,65 @@
 
     const cacheKey = utils.getCacheKey(address);
     
-    // Verifier le cache
     if (cache.has(cacheKey)) {
       const cached = cache.get(cacheKey);
       if (Date.now() - cached.timestamp < CONFIG.cacheTimeout) {
-        debug('Utilisation des donnees en cache');
         return Promise.resolve(cached.data);
       }
     }
 
-    debug('Demarrage de l analyse pour: ' + address);
-
-    // Etape 1: Geocodage
-    progressManager.setStepStatus('geocoding', 'active', 'Localisation en cours...');
-    debug('Geocodage en cours...');
+    progressManager.show();
+    progressManager.setStep(1);
     
     const addressUrl = 'https://api-adresse.data.gouv.fr/search/?q=' + encodeURIComponent(address) + '&limit=5';
     
-    return new Promise(function(resolve) {
-      progressManager.animateStep('geocoding', function() {
-        fetchWithFallback(addressUrl).then(function(locationData) {
-          if (!locationData || !locationData.features || !locationData.features.length) {
-            progressManager.setStepStatus('geocoding', 'error', 'Adresse non trouvée');
-            throw new Error('Adresse non trouvee. Essayez avec le code postal ou le nom de la ville.');
-          }
+    return fetchWithFallback(addressUrl).then(function(locationData) {
+      if (!locationData || !locationData.features || !locationData.features.length) {
+        throw new Error('Adresse non trouvée. Essayez avec le code postal ou le nom de la ville.');
+      }
 
-          const location = locationData.features[0];
-          const cityCode = location.properties.citycode;
-          const cityName = location.properties.city;
-          
-          progressManager.setStepStatus('geocoding', 'completed', 'Adresse trouvée: ' + cityName);
-          debug('Adresse trouvee: ' + cityName + ' (' + cityCode + ')');
+      const location = locationData.features[0];
+      const cityCode = location.properties.citycode;
+      
+      progressManager.setStep(2);
+      
+      const dateLimit = new Date();
+      dateLimit.setFullYear(dateLimit.getFullYear() - CONFIG.dateRangeYears);
+      const dateLimitStr = dateLimit.toISOString().split('T')[0];
 
-          // Etape 2: Recuperation des donnees de qualite
-          progressManager.setStepStatus('quality', 'active', 'Récupération des analyses...');
-          
-          const dateLimit = new Date();
-          dateLimit.setFullYear(dateLimit.getFullYear() - CONFIG.dateRangeYears);
-          const dateLimitStr = dateLimit.toISOString().split('T')[0];
+      const waterUrl = 'https://hubeau.eaufrance.fr/api/v1/qualite_eau_potable/resultats_dis?code_commune=' + cityCode + '&date_min_prelevement=' + dateLimitStr + '&size=200&format=json&sort=desc';
+      
+      return fetchWithFallback(waterUrl).then(function(qualityData) {
+        progressManager.setStep(3);
 
-          const waterUrl = 'https://hubeau.eaufrance.fr/api/v1/qualite_eau_potable/resultats_dis?code_commune=' + cityCode + '&date_min_prelevement=' + dateLimitStr + '&size=200&format=json&sort=desc';
-          
-          debug('Recuperation des donnees qualite...');
-          
-          progressManager.animateStep('quality', function() {
-            fetchWithFallback(waterUrl).then(function(qualityData) {
-              progressManager.setStepStatus('quality', 'completed', 'Données récupérées (' + (qualityData.data ? qualityData.data.length : 0) + ' analyses)');
-              
-              // Etape 3: Calcul du score
-              progressManager.setStepStatus('scoring', 'active', 'Calcul du score...');
-              
-              progressManager.animateStep('scoring', function() {
-                const result = {
-                  location: location,
-                  qualityData: qualityData,
-                  timestamp: Date.now()
-                };
+        // Simuler le temps de calcul
+        return new Promise(function(resolve) {
+          setTimeout(function() {
+            progressManager.setStep(4);
+            
+            const result = {
+              location: location,
+              qualityData: qualityData,
+              timestamp: Date.now()
+            };
 
-                // Mise en cache
-                cache.set(cacheKey, {
-                  data: result,
-                  timestamp: Date.now()
-                });
-
-                progressManager.setStepStatus('scoring', 'completed', 'Score calculé');
-                debug('Analyse terminee avec succes');
-                resolve(result);
-              });
-            }).catch(function(error) {
-              progressManager.setStepStatus('quality', 'error', 'Erreur: ' + error.message);
-              throw error;
+            cache.set(cacheKey, {
+              data: result,
+              timestamp: Date.now()
             });
-          });
-        }).catch(function(error) {
-          progressManager.setStepStatus('geocoding', 'error', 'Erreur: ' + error.message);
-          throw error;
+
+            // Finaliser la progression
+            setTimeout(function() {
+              progressManager.hide();
+              resolve(result);
+            }, 1500);
+          }, 2000);
         });
       });
     });
   }
 
-  // Fonction d'envoi d'email
-  function sendEmailReport(emailAddress, analysisData) {
-    if (!CONFIG.enableEmail || !emailAddress || !utils.isValidEmail(emailAddress)) {
-      return Promise.resolve();
-    }
-
-    progressManager.setStepStatus('email', 'active', 'Envoi en cours...');
-    
-    return new Promise(function(resolve) {
-      progressManager.animateStep('email', function() {
-        // Simuler l'envoi d'email (remplacer par vraie API)
-        setTimeout(function() {
-          progressManager.setStepStatus('email', 'completed', 'Rapport envoyé à ' + emailAddress);
-          debug('Email envoye a: ' + emailAddress);
-          resolve();
-        }, 1000);
-      });
-    });
-  }
-
-  // Generation du HTML des resultats
+  // Génération du HTML des résultats (conservée intégralement)
   function generateResultsHtml(location, qualityResponse) {
     const props = location.properties;
     let html = '';
@@ -1725,12 +1362,12 @@
 
     if (scoreData) {
       // === NOUVEAU : AFFICHAGE DU SCORE PRINCIPAL ===
-      html += '<div class="water-result water-result--score" style="text-align: center; background: #f8fafc; border-left: 4px solid ' + scoreData.couleur + ';">';
+      html += '<div class="water-result water-result--score" style="text-align: center; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); border-left: 4px solid ' + scoreData.couleur + ';">';
       html += '<h3 class="water-result__title">🎯 Score de Qualité</h3>';
       html += '<div class="water-result__content">';
       
       // Cercle de score
-      html += '<div style="display: inline-flex; width: 120px; height: 120px; border: 8px solid ' + scoreData.couleur + '; border-radius: 50%; flex-direction: column; align-items: center; justify-content: center; margin: 1rem auto;">';
+      html += '<div style="display: inline-block; width: 120px; height: 120px; border: 8px solid ' + scoreData.couleur + '; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 1rem auto;">';
       html += '<div style="font-size: 36px; font-weight: bold; color: ' + scoreData.couleur + ';">' + scoreData.score + '</div>';
       html += '<div style="font-size: 14px; color: #666;">/ 100</div>';
       html += '</div>';
@@ -1860,133 +1497,157 @@
     return html;
   }
 
-  // Affichage d erreur
+  // Affichage d'erreur
   function showError(message) {
+    progressManager.hide();
+    
     const html = '<div class="water-result water-result--error">' +
       '<h4 class="water-result__title">❌ Erreur</h4>' +
       '<div class="water-result__content">' +
       '<p>' + utils.sanitizeHtml(message) + '</p>' +
       '<p>💡 <strong>Suggestions :</strong></p>' +
       '<p>• Essayez avec un code postal (ex: 01000)</p>' +
-      '<p>• Verifiez l orthographe de votre adresse</p>' +
-      '<p>• Verifiez votre connexion internet</p>' +
+      '<p>• Vérifiez l\'orthographe de votre adresse</p>' +
+      '<p>• Vérifiez votre connexion internet</p>' +
       '</div></div>';
-    ui.showResults(html);
+    
+    const results = document.querySelector(selectors.results);
+    if (results) {
+      results.innerHTML = html;
+      results.style.display = 'block';
+    }
   }
 
-  // Gestionnaire principal du formulaire
+  // Gestionnaire de soumission du formulaire
   function handleFormSubmit(event) {
     event.preventDefault();
     
-    const input = document.querySelector(selectors.input);
-    const emailInput = document.querySelector(selectors.emailInput);
-    const address = input ? input.value.trim() : '';
+    const form = event.target;
+    const formData = new FormData(form);
     
-    if (!address) {
-      showError('Veuillez saisir une adresse');
+    // Récupérer les données du formulaire
+    userEmail = formData.get('contact[email]');
+    userAddress = formData.get('contact[address]');
+    const advancedAnalysis = formData.get('contact[advanced_analysis]');
+    const termsAccepted = formData.get('contact[terms_accepted]');
+    
+    // Validation côté client
+    if (!userEmail || !userAddress) {
+      alert('Veuillez remplir tous les champs obligatoires');
       return;
     }
-
-    // Récupérer l'email si fourni
-    userEmail = null;
-    if (CONFIG.enableEmail && emailInput) {
-      const email = emailInput.value.trim();
-      if (email && utils.isValidEmail(email)) {
-        userEmail = email;
-      }
+    
+    if (!advancedAnalysis || !termsAccepted) {
+      alert('Veuillez accepter les conditions requises');
+      return;
     }
+    
+    // Désactiver le bouton de soumission
+    const submitBtn = document.querySelector(selectors.submitBtn);
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="water-analyzer__button-icon">🔄</span><span class="water-analyzer__button-text">Envoi en cours...</span>';
+    }
+    
+    // Simuler l'envoi du formulaire (en réalité Shopify gère ça)
+    setTimeout(function() {
+      // Masquer le formulaire et afficher le message de succès
+      const formSection = document.querySelector(selectors.formSection);
+      const analysisSection = document.querySelector(selectors.analysisSection);
+      
+      if (formSection) formSection.style.display = 'none';
+      if (analysisSection) analysisSection.style.display = 'block';
+      
+      // Lancer l'analyse automatiquement
+      setTimeout(function() {
+        startAnalysis(userAddress);
+      }, 1000);
+      
+    }, 2000);
+  }
 
-    ui.toggleButton(true, 'Analyse...');
-    ui.showLoading();
-
+  // Fonction pour démarrer l'analyse
+  function startAnalysis(address) {
     analyzeWater(address).then(function(result) {
       const html = generateResultsHtml(result.location, result.qualityData);
-      ui.showResults(html);
-      
-      // Envoyer l'email si demandé
-      if (userEmail) {
-        return sendEmailReport(userEmail, result);
+      const results = document.querySelector(selectors.results);
+      if (results) {
+        results.innerHTML = html;
+        results.style.display = 'block';
+        
+        setTimeout(function() {
+          results.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+          });
+        }, 100);
       }
     }).catch(function(error) {
       showError(error.message);
-    }).finally(function() {
-      ui.hideLoading();
-      ui.toggleButton(false, '{{ section.settings.button_text | default: "Analyser" }}');
     });
   }
 
   // Gestionnaire des exemples
-  function handleExampleClick(event) {
-    const example = event.target.dataset.example;
-    const input = document.querySelector(selectors.input);
-    
-    if (input && example) {
-      input.value = example;
+  function setExample(address) {
+    const input = document.querySelector('#contact_address');
+    if (input) {
+      input.value = address;
       input.focus();
-      
-      // Animation de feedback
-      event.target.style.transform = 'scale(0.95)';
-      setTimeout(function() {
-        event.target.style.transform = '';
-      }, 150);
     }
   }
 
   // Initialisation
   function init() {
-    debug('Initialisation de l analyseur d eau');
+    console.log('🌊 Water Analyzer (Form Required) initialized');
 
-    // Gestionnaire du formulaire
-    const form = document.querySelector(selectors.form);
-    if (form) {
-      form.addEventListener('submit', handleFormSubmit);
+    // Gestionnaire du formulaire de contact
+    const contactForm = document.querySelector(selectors.contactForm);
+    if (contactForm) {
+      contactForm.addEventListener('submit', handleFormSubmit);
     }
 
-    // Gestionnaire des exemples
+    // Gestionnaires des exemples
     const examples = document.querySelectorAll(selectors.examples);
-    for (let i = 0; i < examples.length; i++) {
-      examples[i].addEventListener('click', handleExampleClick);
-    }
-
-    // Gestionnaire Enter sur l input
-    const input = document.querySelector(selectors.input);
-    if (input) {
-      input.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          handleFormSubmit(e);
-        }
+    examples.forEach(function(example) {
+      example.addEventListener('click', function() {
+        const address = this.dataset.example;
+        setExample(address);
+        
+        this.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+          this.style.transform = '';
+        }, 150);
       });
+    });
+
+    // Vérifier si le formulaire a été soumis avec succès
+    const formSuccess = document.querySelector(selectors.formSuccess);
+    if (formSuccess) {
+      formSuccess.style.display = 'block';
+      
+      // Si on a les données dans l'URL ou le localStorage, lancer l'analyse
+      const urlParams = new URLSearchParams(window.location.search);
+      const savedAddress = urlParams.get('address') || localStorage.getItem('water_analysis_address');
+      const savedEmail = urlParams.get('email') || localStorage.getItem('water_analysis_email');
+      
+      if (savedAddress && savedEmail) {
+        userAddress = savedAddress;
+        userEmail = savedEmail;
+        
+        setTimeout(function() {
+          const formSection = document.querySelector(selectors.formSection);
+          const analysisSection = document.querySelector(selectors.analysisSection);
+          
+          if (formSection) formSection.style.display = 'none';
+          if (analysisSection) analysisSection.style.display = 'block';
+          
+          startAnalysis(userAddress);
+        }, 2000);
+      }
     }
-
-    // Gestionnaires de la carte
-    if (CONFIG.enableMap) {
-      const mapToggle = document.querySelector(selectors.mapToggle);
-      const mapClose = document.querySelector(selectors.mapClose);
-      const mapConfirm = document.querySelector(selectors.mapConfirm);
-
-      if (mapToggle) {
-        mapToggle.addEventListener('click', function() {
-          mapManager.show();
-          if (!map) {
-            mapManager.init();
-          }
-        });
-      }
-
-      if (mapClose) {
-        mapClose.addEventListener('click', mapManager.hide);
-      }
-
-      if (mapConfirm) {
-        mapConfirm.addEventListener('click', mapManager.confirmAddress);
-      }
-    }
-
-    debug('Analyseur initialise et pret');
   }
 
-  // Demarrage quand le DOM est pret
+  // Démarrage
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
@@ -1998,25 +1659,50 @@
 
 {% schema %}
 {
-  "name": "Analyseur Eau Potable",
+  "name": "Analyseur Eau",
   "settings": [
     {
       "type": "header",
-      "content": "📝 Contenu et textes"
+      "content": "🎨 Apparence générale"
     },
     {
       "type": "text",
       "id": "title",
       "label": "Titre principal",
-      "default": "Analyseur Qualite Eau Potable",
+      "default": "Analyseur Qualité Eau Potable",
       "info": "Le titre affiché en haut de la section"
     },
     {
       "type": "text",
       "id": "subtitle",
       "label": "Sous-titre",
-      "default": "Decouvrez la qualite de l eau a votre adresse",
+      "default": "Découvrez la qualité de l'eau à votre adresse",
       "info": "Description affichée sous le titre"
+    },
+    {
+      "type": "color",
+      "id": "header_background",
+      "label": "Couleur de l'en-tête",
+      "default": "#4facfe",
+      "info": "Couleur de fond de l'en-tête"
+    },
+    {
+      "type": "color",
+      "id": "header_text_color",
+      "label": "Couleur du texte en-tête",
+      "default": "#ffffff",
+      "info": "Couleur du texte dans l'en-tête"
+    },
+    {
+      "type": "color",
+      "id": "content_background",
+      "label": "Couleur de fond du contenu",
+      "default": "#ffffff",
+      "info": "Couleur de fond de la zone de contenu"
+    },
+    {
+      "type": "header",
+      "content": "🔍 Section de recherche"
     },
     {
       "type": "text",
@@ -2029,8 +1715,15 @@
       "type": "textarea",
       "id": "search_description",
       "label": "Description de la recherche",
-      "default": "Saisissez votre adresse pour obtenir un rapport de qualite detaille",
+      "default": "Remplissez le formulaire ci-dessous pour obtenir votre analyse personnalisée",
       "info": "Texte explicatif pour la recherche"
+    },
+    {
+      "type": "color",
+      "id": "search_background",
+      "label": "Couleur de fond recherche",
+      "default": "#f093fb",
+      "info": "Couleur de fond de la zone de recherche"
     },
     {
       "type": "text",
@@ -2040,65 +1733,47 @@
       "info": "Texte d'exemple dans le champ de saisie"
     },
     {
+      "type": "header",
+      "content": "🎯 Bouton d'action"
+    },
+    {
       "type": "text",
       "id": "button_text",
       "label": "Texte du bouton",
-      "default": "Analyser",
-      "info": "Texte affiché sur le bouton d'analyse"
+      "default": "Lancer l'analyse",
+      "info": "Texte affiché sur le bouton de soumission"
+    },
+    {
+      "type": "color",
+      "id": "button_background",
+      "label": "Couleur du bouton",
+      "default": "#ff6b6b",
+      "info": "Couleur de fond du bouton d'analyse"
     },
     {
       "type": "header",
-      "content": "🎨 Couleurs - En-tête"
+      "content": "⚙️ Options du formulaire"
     },
     {
-      "type": "color",
-      "id": "header_background",
-      "label": "Fond de l'en-tête",
-      "default": "#4facfe",
-      "info": "Couleur de fond de la section titre"
+      "type": "checkbox",
+      "id": "collect_name",
+      "label": "Collecter le nom",
+      "default": true,
+      "info": "Ajouter un champ nom au formulaire"
     },
     {
-      "type": "color",
-      "id": "header_text_color",
-      "label": "Texte de l'en-tête",
-      "default": "#ffffff",
-      "info": "Couleur du titre et sous-titre"
+      "type": "checkbox",
+      "id": "show_examples",
+      "label": "Afficher les exemples",
+      "default": true,
+      "info": "Affiche les boutons d'exemples d'adresses"
     },
     {
-      "type": "header",
-      "content": "🎨 Couleurs - Contenu principal"
-    },
-    {
-      "type": "color",
-      "id": "content_background",
-      "label": "Fond du contenu",
-      "default": "#ffffff",
-      "info": "Couleur de fond de la section principale"
-    },
-    {
-      "type": "color",
-      "id": "content_text_color",
-      "label": "Texte du contenu",
-      "default": "#333333",
-      "info": "Couleur du texte principal"
-    },
-    {
-      "type": "header",
-      "content": "🎨 Couleurs - Zone de recherche"
-    },
-    {
-      "type": "color",
-      "id": "search_background",
-      "label": "Fond de la recherche",
-      "default": "#f093fb",
-      "info": "Couleur de fond de la zone de saisie"
-    },
-    {
-      "type": "color",
-      "id": "search_text_color",
-      "label": "Texte de la recherche",
-      "default": "#ffffff",
-      "info": "Couleur du texte dans la zone de recherche"
+      "type": "text",
+      "id": "examples",
+      "label": "Exemples d'adresses",
+      "default": "01000,Gex,Bourg-en-Bresse",
+      "info": "Liste d'exemples séparés par des virgules"
     },
     {
       "type": "header",
@@ -2106,74 +1781,21 @@
     },
     {
       "type": "color",
-      "id": "primary_color",
-      "label": "Couleur primaire",
-      "default": "#3b82f6",
-      "info": "Couleur principale (boutons, liens, éléments actifs)"
+      "id": "accent_color",
+      "label": "Couleur d'accent",
+      "default": "#667eea",
+      "info": "Couleur utilisée pour les éléments d'interface"
     },
     {
       "type": "color",
-      "id": "secondary_color",
-      "label": "Couleur secondaire",
-      "default": "#64748b",
-      "info": "Couleur secondaire (éléments neutres)"
-    },
-    {
-      "type": "color",
-      "id": "success_color",
-      "label": "Couleur de succès",
-      "default": "#10b981",
-      "info": "Couleur pour les éléments positifs"
-    },
-    {
-      "type": "color",
-      "id": "warning_color",
-      "label": "Couleur d'attention",
-      "default": "#f59e0b",
-      "info": "Couleur pour les avertissements"
-    },
-    {
-      "type": "color",
-      "id": "error_color",
-      "label": "Couleur d'erreur",
-      "default": "#ef4444",
-      "info": "Couleur pour les erreurs"
+      "id": "text_color",
+      "label": "Couleur du texte",
+      "default": "#333333",
+      "info": "Couleur du texte principal"
     },
     {
       "type": "header",
-      "content": "🎭 Icônes et emojis"
-    },
-    {
-      "type": "text",
-      "id": "header_icon",
-      "label": "Icône du header",
-      "default": "🌊",
-      "info": "Emoji affiché dans le titre principal"
-    },
-    {
-      "type": "text",
-      "id": "search_icon",
-      "label": "Icône de recherche",
-      "default": "🏠",
-      "info": "Emoji affiché dans le titre de recherche"
-    },
-    {
-      "type": "text",
-      "id": "button_icon",
-      "label": "Icône du bouton",
-      "default": "🔍",
-      "info": "Emoji affiché dans le bouton"
-    },
-    {
-      "type": "text",
-      "id": "loading_icon",
-      "label": "Icône de chargement",
-      "default": "🔍",
-      "info": "Emoji affiché pendant le chargement"
-    },
-    {
-      "type": "header",
-      "content": "📐 Mise en forme"
+      "content": "📐 Dimensions et espacement"
     },
     {
       "type": "range",
@@ -2199,51 +1821,44 @@
     },
     {
       "type": "header",
-      "content": "⚙️ Fonctionnalités"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_examples",
-      "label": "Afficher les exemples",
-      "default": true,
-      "info": "Affiche les boutons d'exemples d'adresses"
+      "content": "🔧 Configuration technique"
     },
     {
       "type": "text",
-      "id": "examples",
-      "label": "Exemples d'adresses",
-      "default": "01000,Gex,Bourg-en-Bresse",
-      "info": "Liste d'exemples séparés par des virgules"
-    },
-    {
-      "type": "checkbox",
-      "id": "enable_map",
-      "label": "Activer la carte interactive",
-      "default": false,
-      "info": "Permet de sélectionner une adresse sur une carte"
-    },
-    {
-      "type": "checkbox",
-      "id": "enable_email",
-      "label": "Activer la collecte d'email",
-      "default": false,
-      "info": "Permet aux utilisateurs de recevoir le rapport par email"
+      "id": "contact_tags",
+      "label": "Tags de contact",
+      "default": "lead,water-analysis",
+      "info": "Tags ajoutés aux contacts (séparés par des virgules)"
     },
     {
       "type": "header",
-      "content": "🔧 Options avancées"
+      "content": "😀 Icônes et emojis"
     },
     {
-      "type": "checkbox",
-      "id": "debug_mode",
-      "label": "Mode debug",
-      "default": false,
-      "info": "Affiche les informations de debug (pour le développement)"
+      "type": "text",
+      "id": "header_icon",
+      "label": "Icône du header",
+      "default": "🌊",
+      "info": "Emoji affiché dans le titre principal"
+    },
+    {
+      "type": "text",
+      "id": "search_icon",
+      "label": "Icône de recherche",
+      "default": "🏠",
+      "info": "Emoji affiché dans le titre de recherche"
+    },
+    {
+      "type": "text",
+      "id": "button_icon",
+      "label": "Icône du bouton",
+      "default": "🔍",
+      "info": "Emoji affiché dans le bouton"
     }
   ],
   "presets": [
     {
-      "name": "Analyseur Eau Potable"
+      "name": "Analyseur Eau"
     }
   ]
 }
