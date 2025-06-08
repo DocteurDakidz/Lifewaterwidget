@@ -1,0 +1,426 @@
+<!-- Analyseur Eau - Version CORS renforcée -->
+<div id="water-analyzer-fixed" style="
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+  margin: 20px 0;
+  color: #333;
+">
+  <!-- Header -->
+  <div style="
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    padding: 30px 20px;
+    text-align: center;
+  ">
+    <h2 style="font-size: 1.8em; margin: 0 0 10px 0;">🌊 Analyseur Qualite Eau Potable</h2>
+    <p style="margin: 0; opacity: 0.9;">Decouvrez la qualite de l eau a votre adresse</p>
+  </div>
+
+  <!-- Content -->
+  <div style="background: white; padding: 30px 20px;">
+    
+    <!-- Search Section -->
+    <div style="
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      padding: 25px;
+      border-radius: 15px;
+      margin-bottom: 25px;
+      color: white;
+    ">
+      <h3 style="margin: 0 0 15px 0;">🏠 Analysez votre eau</h3>
+      <p style="margin: 0 0 15px 0;">Saisissez votre adresse pour obtenir un rapport de qualite</p>
+      
+      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <input 
+          type="text" 
+          id="waterInputFixed" 
+          placeholder="01000 Bourg-en-Bresse"
+          style="
+            flex: 1;
+            min-width: 250px;
+            padding: 12px 18px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.9);
+            outline: none;
+          ">
+        <button 
+          id="waterBtnFixed"
+          onclick="analyzeWaterFixed()"
+          style="
+            padding: 12px 25px;
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+          ">
+          🔍 Analyser
+        </button>
+      </div>
+
+      <!-- Examples -->
+      <div style="margin-top: 15px; opacity: 0.9;">
+        <strong>💡 Exemples :</strong>
+        <span onclick="setExampleFixed('01000')" style="
+          background: rgba(255, 255, 255, 0.2);
+          padding: 4px 8px;
+          border-radius: 12px;
+          margin: 3px;
+          display: inline-block;
+          cursor: pointer;
+          font-size: 0.9em;
+        ">01000</span>
+        <span onclick="setExampleFixed('Gex')" style="
+          background: rgba(255, 255, 255, 0.2);
+          padding: 4px 8px;
+          border-radius: 12px;
+          margin: 3px;
+          display: inline-block;
+          cursor: pointer;
+          font-size: 0.9em;
+        ">Gex</span>
+        <span onclick="setExampleFixed('Bourg-en-Bresse')" style="
+          background: rgba(255, 255, 255, 0.2);
+          padding: 4px 8px;
+          border-radius: 12px;
+          margin: 3px;
+          display: inline-block;
+          cursor: pointer;
+          font-size: 0.9em;
+        ">Bourg-en-Bresse</span>
+      </div>
+    </div>
+
+    <!-- Debug Info -->
+    <div id="debugInfo" style="
+      background: #e3f2fd;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-family: monospace;
+      font-size: 12px;
+      display: none;
+    ">
+      <strong>Debug :</strong> <span id="debugText">En attente...</span>
+    </div>
+
+    <!-- Loading -->
+    <div id="waterLoadingFixed" style="text-align: center; padding: 30px; display: none;">
+      <div style="
+        width: 40px;
+        height: 40px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 15px;
+      "></div>
+      <h4>🔍 Analyse en cours...</h4>
+      <p id="loadingText">Etape 1: Localisation de l adresse...</p>
+    </div>
+
+    <!-- Results -->
+    <div id="waterResultsFixed" style="display: none;"></div>
+  </div>
+</div>
+
+<style>
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
+
+<script>
+(function() {
+  'use strict';
+  
+  // Configuration avec MULTIPLES méthodes de contournement CORS
+  const CORS_METHODS = [
+    {
+      name: 'AllOrigins',
+      proxy: 'https://api.allorigins.win/get?url=',
+      parse: (data) => JSON.parse(data.contents)
+    },
+    {
+      name: 'ProxyAnywhereHeroku', 
+      proxy: 'https://cors-anywhere.herokuapp.com/',
+      parse: (data) => data
+    },
+    {
+      name: 'ThingProxy',
+      proxy: 'https://thingproxy.freeboard.io/fetch/',
+      parse: (data) => data
+    },
+    {
+      name: 'ProxyCors',
+      proxy: 'https://proxy.cors.sh/',
+      parse: (data) => data
+    },
+    {
+      name: 'Direct', // Tentative directe en dernier recours
+      proxy: '',
+      parse: (data) => data
+    }
+  ];
+
+  let currentMethodIndex = 0;
+
+  // Fonction de debug
+  function debug(message) {
+    console.log('🌊 Water Analyzer:', message);
+    const debugEl = document.getElementById('debugInfo');
+    const debugText = document.getElementById('debugText');
+    if (debugEl && debugText) {
+      debugEl.style.display = 'block';
+      debugText.textContent = message;
+    }
+  }
+
+  // Fonction de loading avec étapes
+  function updateLoading(step) {
+    const loadingText = document.getElementById('loadingText');
+    if (loadingText) {
+      loadingText.textContent = step;
+    }
+  }
+
+  // Fonction principale
+  window.analyzeWaterFixed = async function() {
+    const input = document.getElementById('waterInputFixed');
+    const loading = document.getElementById('waterLoadingFixed');
+    const results = document.getElementById('waterResultsFixed');
+    const btn = document.getElementById('waterBtnFixed');
+    
+    const address = input?.value?.trim();
+    if (!address) {
+      showError('Veuillez saisir une adresse');
+      return;
+    }
+
+    // Reset
+    if (results) results.style.display = 'none';
+    if (loading) loading.style.display = 'block';
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = '🔄 Analyse...';
+    }
+
+    currentMethodIndex = 0; // Reset à la première méthode
+    debug('Demarrage de l analyse pour: ' + address);
+
+    try {
+      // Étape 1: Géocodage
+      updateLoading('Etape 1: Localisation de l adresse...');
+      debug('Tentative de geocodage...');
+      
+      const addressUrl = `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(address)}&limit=1`;
+      const locationData = await fetchWithFallback(addressUrl);
+      
+      if (!locationData?.features?.length) {
+        throw new Error('Adresse non trouvee. Essayez avec le code postal seulement.');
+      }
+
+      const location = locationData.features[0];
+      const cityCode = location.properties.citycode;
+      const cityName = location.properties.city;
+      
+      debug(`Adresse trouvee: ${cityName} (${cityCode})`);
+
+      // Étape 2: Récupération données eau
+      updateLoading('Etape 2: Recuperation des analyses d eau...');
+      
+      const dateLimit = new Date();
+      dateLimit.setFullYear(dateLimit.getFullYear() - 2);
+      const dateLimitStr = dateLimit.toISOString().split('T')[0];
+
+      const waterUrl = `https://hubeau.eaufrance.fr/api/v1/qualite_eau_potable/resultats_dis?code_commune=${cityCode}&date_min_prelevement=${dateLimitStr}&size=200&format=json`;
+      
+      debug('Recuperation des donnees qualite...');
+      const qualityData = await fetchWithFallback(waterUrl);
+
+      updateLoading('Etape 3: Analyse des donnees...');
+
+      // Étape 3: Affichage
+      displayResults(location, qualityData);
+      debug('Analyse terminee avec succes');
+
+    } catch (error) {
+      debug('Erreur: ' + error.message);
+      showError(error.message);
+    } finally {
+      if (loading) loading.style.display = 'none';
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = '🔍 Analyser';
+      }
+    }
+  };
+
+  // Fonction de fetch avec fallback sur plusieurs méthodes
+  async function fetchWithFallback(url, methodIndex = 0) {
+    if (methodIndex >= CORS_METHODS.length) {
+      throw new Error('Toutes les methodes de connexion ont echoue. Verifiez votre connexion internet.');
+    }
+
+    const method = CORS_METHODS[methodIndex];
+    debug(`Tentative ${methodIndex + 1}/${CORS_METHODS.length}: ${method.name}`);
+
+    try {
+      const proxyUrl = method.proxy ? `${method.proxy}${encodeURIComponent(url)}` : url;
+      
+      const response = await fetch(proxyUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+        mode: 'cors'
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      return method.parse(data);
+
+    } catch (error) {
+      debug(`Methode ${method.name} echouee: ${error.message}`);
+      
+      // Essayer la méthode suivante
+      return fetchWithFallback(url, methodIndex + 1);
+    }
+  }
+
+  // Affichage des résultats
+  function displayResults(location, qualityResponse) {
+    const results = document.getElementById('waterResultsFixed');
+    const props = location.properties;
+    
+    let html = `
+      <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin: 15px 0; border-left: 4px solid #00d2ff;">
+        <h3 style="margin: 0 0 10px 0;">📍 Adresse analysee</h3>
+        <p><strong>${props.label}</strong></p>
+        <p>🏘️ ${props.city} (${props.postcode || 'N/A'})</p>
+        <p>🆔 Code INSEE: ${props.citycode}</p>
+      </div>
+    `;
+
+    if (qualityResponse?.data?.length > 0) {
+      const analyses = qualityResponse.data;
+      const latest = analyses[0];
+      const lastDate = new Date(latest.date_prelevement).toLocaleDateString('fr-FR');
+
+      html += `
+        <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin: 15px 0; border-left: 4px solid #28a745;">
+          <h3>📊 Rapport Qualite - ${props.city}</h3>
+          <p><strong>Derniere analyse:</strong> ${lastDate}</p>
+          <p><strong>Total analyses:</strong> ${analyses.length}</p>
+          ${latest.nom_distributeur ? `<p><strong>Distributeur:</strong> ${latest.nom_distributeur}</p>` : ''}
+        </div>
+      `;
+
+      // Conformité
+      const bactConform = analyses.filter(d => d.conformite_limites_bact_prelevement === 'C').length;
+      const bactTotal = analyses.filter(d => d.conformite_limites_bact_prelevement).length;
+      
+      if (bactTotal > 0) {
+        const bactPercent = (bactConform / bactTotal) * 100;
+        html += `
+          <div style="background: linear-gradient(135deg, #a8e6cf 0%, #dcedc1 100%); padding: 20px; border-radius: 10px; margin: 20px 0;">
+            <h4>✅ Conformite Reglementaire</h4>
+            <p>🦠 Qualite bacteriologique: ${bactPercent.toFixed(1)}% conforme (${bactConform}/${bactTotal})</p>
+          </div>
+        `;
+      }
+
+      // Recommandations
+      html += `
+        <div style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); padding: 20px; border-radius: 12px; margin: 20px 0;">
+          <h4>💡 Recommandations</h4>
+          <p>• 🔬 Analyses conformes aux normes francaises</p>
+          <p>• 📞 En cas de doute, contactez votre distributeur</p>
+          <p>• 💧 Buvez 1,5L d eau par jour</p>
+        </div>
+      `;
+
+    } else {
+      html += `
+        <div style="background: #fff3cd; color: #856404; padding: 15px; border-radius: 8px; margin: 15px 0;">
+          <h4>⚠️ Aucune analyse recente</h4>
+          <p>Aucune donnee trouvee pour ${props.city}. Cette commune peut etre desservie par un reseau intercommunal.</p>
+        </div>
+      `;
+    }
+
+    if (results) {
+      results.innerHTML = html;
+      results.style.display = 'block';
+      results.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+
+  function showError(message) {
+    const results = document.getElementById('waterResultsFixed');
+    if (results) {
+      results.innerHTML = `
+        <div style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px; margin: 15px 0;">
+          <h4>❌ Erreur</h4>
+          <p>${message}</p>
+          <p>💡 Essayez avec un code postal (ex: 01000) ou verifiez votre connexion.</p>
+        </div>
+      `;
+      results.style.display = 'block';
+    }
+  }
+
+  // Fonctions utilitaires
+  window.setExampleFixed = function(address) {
+    const input = document.getElementById('waterInputFixed');
+    if (input) {
+      input.value = address;
+      input.focus();
+    }
+  };
+
+  // Event listener Enter
+  document.addEventListener('DOMContentLoaded', function() {
+    const input = document.getElementById('waterInputFixed');
+    if (input) {
+      input.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          analyzeWaterFixed();
+        }
+      });
+    }
+    debug('Analyseur initialise et pret');
+  });
+
+})();
+</script>
+
+{% schema %}
+{
+  "name": "Analyseur Eau CORS Fix",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Titre",
+      "default": "Analyseur Qualite Eau"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Analyseur Eau CORS Fix"
+    }
+  ]
+}
+{% endschema %}
